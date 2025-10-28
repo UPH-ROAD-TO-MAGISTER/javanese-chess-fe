@@ -10,10 +10,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the remaining files
+# Copy all files
 COPY . .
 
-# Build the Vue.js app for production
+# Build the Vue.js app
 RUN npm run build
 
 # Stage 2: Serve the app using Nginx

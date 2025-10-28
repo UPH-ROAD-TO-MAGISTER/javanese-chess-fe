@@ -39,8 +39,8 @@ jobs:
           command_timeout: 15m
           script: |
             cd ~/javanese-chess-fe
-            docker stop vue-app || true
-            docker rm vue-app || true
+            docker stop javanese-chess-fe || true
+            docker rm javanese-chess-fe || true
             docker build -t javanese-chess-fe .
-            docker run -d -p 5000:5173 --restart=always --name vue-app javanese-chess-fe
+            docker run -d -p 5000:5173 --restart=always --name javanese-chess-fe javanese-chess-fe
             echo "✅ Frontend deployment complete"
