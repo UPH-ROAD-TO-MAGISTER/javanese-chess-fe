@@ -22,8 +22,8 @@ FROM nginx:alpine
 # Copy the build files from the build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Expose port 5000 for the frontend
-EXPOSE 5000
+# Expose port 80 for Nginx (default)
+EXPOSE 80
 
 # Run Nginx to serve the app
 CMD ["nginx", "-g", "daemon off;"]

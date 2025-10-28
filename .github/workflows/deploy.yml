@@ -42,5 +42,6 @@ jobs:
             docker stop javanese-chess-fe || true
             docker rm javanese-chess-fe || true
             docker build -t javanese-chess-fe .
-            docker run -d -p 5000:5173 --restart=always --name javanese-chess-fe javanese-chess-fe
+            # Map host port 5000 to container port 80 (nginx default)
+            docker run -d -p 5000:80 --restart=always --name javanese-chess-fe javanese-chess-fe
             echo "✅ Frontend deployment complete"

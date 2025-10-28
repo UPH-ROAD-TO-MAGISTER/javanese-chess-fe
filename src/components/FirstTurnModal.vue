@@ -131,7 +131,8 @@ async function handleShuffle() {
 
   // Randomly select a player
   const randomIndex = Math.floor(Math.random() * props.players.length)
-  selectedPlayer.value = props.players[randomIndex]
+  // Guard against empty array / out-of-bounds index — normalize `undefined` to `null`
+  selectedPlayer.value = props.players[randomIndex] ?? null
 
   isShuffling.value = false
 }
