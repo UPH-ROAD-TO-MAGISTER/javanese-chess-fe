@@ -1,6 +1,6 @@
 <template>
   <div
-    class="glass-card p-3 flex-shrink-0 relative"
+    class="relative flex-shrink-0 p-3 glass-card"
     :class="[
       isPlayerTurn && !disabled
         ? 'ring-2 ring-green-400 ring-offset-2 ring-offset-transparent'
@@ -16,14 +16,18 @@
       YOUR TURN - Play a card!
     </div>
 
-    <h3 class="text-sm font-semibold text-white mb-2">
+    <h3 class="mb-2 text-sm font-semibold text-white">
       Your Cards
       <span v-if="!isPlayerTurn && !disabled" class="text-[10px] text-white/50 ml-2"
         >(Waiting...)</span
       >
     </h3>
 
-    <div v-if="cards.length > 0" class="flex flex-wrap gap-2.5">
+    <div
+      v-if="cards.length > 0"
+      class="grid gap-2 md:flex md:flex-wrap md:gap-4"
+      :style="{ gridTemplateColumns: `repeat(${cards.length}, minmax(0, 1fr))` }"
+    >
       <div
         v-for="card in cards"
         :key="card.id"
@@ -31,7 +35,7 @@
         @click="handleCardClick(card)"
         @dragstart="handleDragStart($event, card)"
         @dragend="handleDragEnd"
-        class="card-item glass-strong rounded-xl p-4 cursor-pointer transition-all hover:scale-110 hover:shadow-2xl min-w-[65px] relative overflow-hidden"
+        class="card-item glass-strong rounded-xl p-2 md:p-4 cursor-pointer transition-all hover:scale-110 hover:shadow-2xl relative overflow-hidden md:min-w-[80px]"
         :class="[
           `border-3 border-player-${card.color}`,
           `card-gradient-${card.color}`,
@@ -52,19 +56,19 @@
         <div class="card-shine"></div>
 
         <!-- Card content -->
-        <div class="text-center relative z-10">
+        <div class="relative z-10 text-center">
           <div class="text-3xl font-black text-white mb-1.5 card-value drop-shadow-lg">
             {{ card.value }}
           </div>
           <div
-            class="w-6 h-6 rounded-full mx-auto shadow-lg card-color-indicator"
+            class="w-6 h-6 mx-auto rounded-full shadow-lg card-color-indicator"
             :class="`bg-player-${card.color}`"
           ></div>
         </div>
       </div>
     </div>
 
-    <div v-else class="text-white/60 text-sm text-center py-4">No cards in hand</div>
+    <div v-else class="py-4 text-sm text-center text-white/60">No cards in hand</div>
 
     <div
       v-if="
@@ -74,18 +78,18 @@
         highlightedCards &&
         highlightedCards.length > 0
       "
-      class="mt-3 text-blue-400 text-xs text-center font-semibold animate-pulse"
+      class="mt-3 text-xs font-semibold text-center text-blue-400 animate-pulse"
     >
       💡 Click highlighted card to deploy
     </div>
     <div
       v-else-if="cards.length > 0 && isPlayerTurn && !disabled"
-      class="mt-3 text-green-400 text-xs text-center font-semibold"
+      class="mt-3 text-xs font-semibold text-center text-green-400"
     >
       <span class="md:hidden">📱 Tap card → Tap board cell</span>
       <span class="hidden md:inline">✨ Click card → Click board cell • Or drag to board</span>
     </div>
-    <div v-else-if="cards.length > 0" class="mt-2 text-white/50 text-xs text-center">
+    <div v-else-if="cards.length > 0" class="mt-2 text-xs text-center text-white/50">
       <span class="md:hidden">Tap to select</span>
       <span class="hidden md:inline">Click to select • Or drag to board</span>
     </div>
@@ -130,7 +134,6 @@ function handleDragEnd() {
 
 <style scoped>
 .card-item {
-  min-width: 65px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.2),
