@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Glassmorphism Utilities - Enhanced for better readability */
+@layer components {
+  .glass {
+    @apply bg-black/40 backdrop-blur-xl border border-white/30 shadow-2xl;
+  }
+
+  .glass-card {
+    @apply glass rounded-xl shadow-2xl;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(20px);
+  }
+
+  .glass-strong {
+    @apply bg-black/50 backdrop-blur-2xl border border-white/40 shadow-2xl;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(24px);
+  }
+
+  .glass-light {
+    @apply bg-black/30 backdrop-blur-lg border border-white/20;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Custom Scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-white/5 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full hover:bg-white/30;
+  }
+}
+
+/* Global Styles - Dark Purple-Orange Gradient with Ornaments */
+body {
+  @apply antialiased;
+  background: linear-gradient(
+    135deg,
+    #1a0b2e 0%,
+    #2d1b69 25%,
+    #6b2d5c 50%,
+    #8b3a3a 75%,
+    #994d1c 100%
+  );
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated background ornaments - multiple shapes */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    /* Radial gradients (circles) */
+    radial-gradient(ellipse at 10% 20%, rgba(138, 43, 226, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(255, 140, 0, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 70%, rgba(186, 85, 211, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse at 70% 30%, rgba(255, 165, 0, 0.1) 0%, transparent 45%);
+  animation: ornament-float 30s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Additional floating ornaments with varied shapes */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    /* Hexagon shapes using conic gradients */
+    conic-gradient(
+      from 0deg at 15% 40%,
+      rgba(138, 43, 226, 0.08) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 90deg at 85% 60%,
+      rgba(255, 140, 0, 0.08) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 180deg at 50% 15%,
+      rgba(186, 85, 211, 0.06) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 270deg at 25% 85%,
+      rgba(255, 165, 0, 0.06) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    /* Diagonal stripes/waves */
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 100px,
+        rgba(138, 43, 226, 0.03) 100px,
+        rgba(138, 43, 226, 0.03) 102px
+      ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 120px,
+      rgba(255, 140, 0, 0.03) 120px,
+      rgba(255, 140, 0, 0.03) 122px
+    ),
+    /* Dot pattern */
+      radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 80% 70%, rgba(255, 140, 0, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 60% 25%, rgba(186, 85, 211, 0.04) 2px, transparent 2px);
+  background-size:
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    100%,
+    100%,
+    50px 50px,
+    50px 50px,
+    50px 50px;
+  background-position:
+    15% 40%,
+    85% 60%,
+    50% 15%,
+    25% 85%,
+    0 0,
+    0 0,
+    0 0,
+    25px 25px,
+    12px 38px;
+  animation: ornament-rotate 40s linear infinite reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes ornament-float {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(10px, -10px) rotate(3deg);
+  }
+  66% {
+    transform: translate(-10px, 10px) rotate(-3deg);
+  }
+}
+
+@keyframes ornament-rotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* Ensure content is above background */
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card Drag & Drop Styles */
+.card-dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  cursor: grabbing;
+}
+
+.card-slot-valid {
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.5);
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.card-slot-invalid {
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.5);
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
