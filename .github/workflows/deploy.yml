@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Docker image for Vue.js
         run: |
-          docker build -t vue-app .
+          docker build -t javanese-chess-fe .
 
       - name: Upload Vue.js Docker image to VM
         uses: appleboy/scp-action@v0.1.7
@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "Dockerfile,dist"
-          target: "~/vue-app"
+          target: "~/javanese-chess-fe"
 
       - name: Deploy Vue.js on VM
         uses: appleboy/ssh-action@v1.1.0
@@ -43,10 +43,10 @@ jobs:
           command_timeout: 15m
           script: |
             # Stop and remove old container if running
-            docker stop vue-app || true
-            docker rm vue-app || true
+            docker stop javanese-chess-fe || true
+            docker rm javanese-chess-fe || true
             
             # Run the new container
-            docker run -d -p 5000:5000 --name vue-app vue-app
+            docker run -d -p 5000:5173 --name javanese-chess-fe javanese-chess-fe
 
             echo "✅ Vue.js deployed successfully!"
