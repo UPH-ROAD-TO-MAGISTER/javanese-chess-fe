@@ -4,17 +4,19 @@ FROM node:20-alpine AS build
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json for dependency caching
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy all files
+# Copy the entire context. This allows two use-cases:
+# 1) Full source present (CI or local): package.json exists -> run npm install && build
+# 2) Only `dist` and Dockerfile present (we uploaded from CI): no package.json -> skip install/build
 COPY . .
 
-# Build the Vue.js app
-RUN npm run build
+# Conditionally install and build only if package.json exists in the build context
+RUN if [ -f package.json ]; then \
+			echo "package.json found -> installing dependencies and building" && \
+			npm install && \
+			npm run build; \
+		else \
+			echo "No package.json found -> skipping npm install/build (assuming pre-built dist is present)"; \
+		fi
 
 # Stage 2: Serve the app using Nginx
 FROM nginx:alpine
