@@ -1,7 +1,7 @@
-# Stage 1: Build the Vue.js app using Bun or Node.js
+# Stage 1: Build the Vue.js app using Node.js
 FROM node:20-alpine AS build
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json for dependency caching
@@ -10,14 +10,20 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy all files and build the project
+# Copy the remaining files
 COPY . .
 
-# Expose port 5000 for production preview
-EXPOSE 5000
-
-# Build the production assets
+# Build the Vue.js app for production
 RUN npm run build
 
-# Serve the production build using Vite's preview command
-CMD ["npm", "run", "dev"]
+# Stage 2: Serve the app using Nginx
+FROM nginx:alpine
+
+# Copy the build files from the build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port 5000 for the frontend
+EXPOSE 5000
+
+# Run Nginx to serve the app
+CMD ["nginx", "-g", "daemon off;"]
