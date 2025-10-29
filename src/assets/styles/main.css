@@ -59,6 +59,132 @@ body {
   overflow-x: hidden;
 }
 
+/* Home page - lighter variant with different colors */
+.home-view {
+  background: linear-gradient(
+    135deg,
+    #3a2463 0%,
+    #4d3585 25%,
+    #8b4d7c 50%,
+    #a55d5d 75%,
+    #b97040 100%
+  );
+  position: relative;
+}
+
+/* Home view ornaments - same as body but inherits */
+.home-view::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    /* Radial gradients (circles) */
+    radial-gradient(ellipse at 10% 20%, rgba(138, 43, 226, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(255, 140, 0, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 70%, rgba(186, 85, 211, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse at 70% 30%, rgba(255, 165, 0, 0.1) 0%, transparent 45%);
+  animation: ornament-float 30s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-view::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    /* Hexagon shapes using conic gradients */
+    conic-gradient(
+      from 0deg at 15% 40%,
+      rgba(138, 43, 226, 0.08) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 90deg at 85% 60%,
+      rgba(255, 140, 0, 0.08) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 180deg at 50% 15%,
+      rgba(186, 85, 211, 0.06) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    conic-gradient(
+      from 270deg at 25% 85%,
+      rgba(255, 165, 0, 0.06) 0deg 60deg,
+      transparent 60deg 360deg
+    ),
+    /* Diagonal stripes/waves */
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 100px,
+        rgba(138, 43, 226, 0.03) 100px,
+        rgba(138, 43, 226, 0.03) 102px
+      ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 120px,
+      rgba(255, 140, 0, 0.03) 120px,
+      rgba(255, 140, 0, 0.03) 122px
+    ),
+    /* Dot pattern */
+      radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 80% 70%, rgba(255, 140, 0, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 60% 25%, rgba(186, 85, 211, 0.04) 2px, transparent 2px);
+  background-size:
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    200px 200px,
+    100%,
+    100%,
+    50px 50px,
+    50px 50px,
+    50px 50px;
+  background-position:
+    15% 40%,
+    85% 60%,
+    50% 15%,
+    25% 85%,
+    0 0,
+    0 0,
+    0 0,
+    25px 25px,
+    12px 38px;
+  animation: ornament-rotate 40s linear infinite reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Waiting room - medium variant with backdrop */
+.waiting-room-bg {
+  background: linear-gradient(
+    135deg,
+    #231741 0%,
+    #352372 25%,
+    #733561 50%,
+    #934242 75%,
+    #a15522 100%
+  );
+}
+
+.waiting-room-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
 /* Animated background ornaments - multiple shapes */
 body::before {
   content: '';
@@ -207,6 +333,60 @@ body::after {
   50% {
     opacity: 0.7;
   }
+}
+
+/* Homepage Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in 0.8s ease-out 0.4s both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fade-in 0.8s ease-out 0.6s both;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
 }
 
 /* Smooth transitions */

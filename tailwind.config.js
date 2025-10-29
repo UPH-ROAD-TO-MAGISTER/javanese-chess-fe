@@ -39,6 +39,10 @@ export default {
         'player-red': '#ef4444',
         'player-blue': '#3b82f6',
         'player-purple': '#a855f7',
+        // Background variants for different screens
+        'purple-850': '#1e1538',
+        'indigo-850': '#1a1f4a',
+        'blue-850': '#1a2845',
       },
       backdropBlur: {
         xs: '2px',

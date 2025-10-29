@@ -1,5 +1,17 @@
 <template>
   <div class="min-h-[100dvh] p-2 overflow-hidden">
+    <!-- Waiting Room Modal -->
+    <WaitingRoomModal
+      :show="showWaitingRoom"
+      :room-code="code"
+      :slots="gameStore.roomSlots"
+      :room-master="roomConfig?.roomMaster || ''"
+      :current-player-id="currentPlayerId"
+      @start="handleStartGame"
+      @convert-to-bot="handleConvertToBot"
+      @leave="handleLeaveWaitingRoom"
+    />
+
     <!-- First Turn Modal -->
     <FirstTurnModal
       :show="showFirstTurnModal"
@@ -18,15 +30,41 @@
       @play-again="handlePlayAgain"
     />
 
+    <!-- Game Info Modal -->
+    <GameInfoModal
+      :show="showGameInfo"
+      :room-code="code"
+      :players="gameStore.players"
+      :heuristic-weights="
+        roomConfig?.heuristicWeights || {
+          win: 10000,
+          blockOpponent3: 5000,
+          create3InRow: 1000,
+          create2InRow: 100,
+          cardValue: 10,
+          centerControl: 5,
+          replacement: 50,
+        }
+      "
+      @close="showGameInfo = false"
+    />
+
     <div class="max-w-7xl mx-auto h-[calc(100dvh-1rem)]">
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-2 h-full">
         <!-- Game Board & Cards Section -->
-        <div class="flex flex-col gap-2 min-h-0 order-1">
+        <div class="flex flex-col order-1 min-h-0 gap-2">
           <!-- Board -->
-          <div class="glass-card p-2 flex-1 min-h-0 overflow-auto">
-            <div class="flex justify-between items-center mb-2 gap-2">
+          <div class="flex-1 min-h-0 p-2 overflow-auto glass-card">
+            <div class="flex items-center justify-between gap-2 mb-2">
               <h2 class="text-sm font-semibold text-white">Javanese Chess</h2>
               <div class="flex gap-2">
+                <button
+                  @click="showGameInfo = true"
+                  class="glass-light hover:bg-white/15 text-white text-xs py-1.5 px-3 rounded transition-all"
+                  title="Game Information"
+                >
+                  Game Info
+                </button>
                 <button
                   @click="toggleCoordinates"
                   class="glass-light text-white text-xs px-1.5 py-0.5 rounded text-[10px]"
@@ -70,7 +108,7 @@
 
         <!-- Side Panel (Desktop) / Mobile Menu Overlay -->
         <div
-          class="space-y-2 overflow-y-auto max-h-full order-2 transition-all duration-300"
+          class="order-2 max-h-full space-y-2 overflow-y-auto transition-all duration-300"
           :class="{
             'hidden lg:block': !showMobileMenu,
             'fixed inset-0 z-40 bg-black/50 backdrop-blur-sm p-4 flex items-start justify-center pt-20':
@@ -87,26 +125,26 @@
             }"
           >
             <!-- Current Turn -->
-            <div class="glass-card p-4">
-              <h3 class="text-base font-bold text-white mb-3">Current Turn</h3>
+            <div class="p-4 glass-card">
+              <h3 class="mb-3 text-base font-bold text-white">Current Turn</h3>
               <div
                 v-if="gameStore.currentPlayer"
-                class="flex items-center gap-3 glass-light rounded-lg p-3"
+                class="flex items-center gap-3 p-3 rounded-lg glass-light"
               >
                 <div
                   class="w-5 h-5 rounded-full"
                   :class="`bg-player-${gameStore.currentPlayer.color}`"
                 ></div>
-                <span class="text-white text-base font-semibold">
+                <span class="text-base font-semibold text-white">
                   {{ gameStore.currentPlayer.name }}
                 </span>
               </div>
-              <div v-else class="text-white/70 text-sm text-center py-3">No player turn yet</div>
+              <div v-else class="py-3 text-sm text-center text-white/70">No player turn yet</div>
             </div>
 
             <!-- Players Grid -->
-            <div class="glass-card p-4">
-              <h3 class="text-base font-bold text-white mb-3">Players</h3>
+            <div class="p-4 glass-card">
+              <h3 class="mb-3 text-base font-bold text-white">Players</h3>
               <div v-if="gameStore.players.length > 0" class="grid grid-cols-2 gap-2">
                 <div
                   v-for="player in gameStore.players"
@@ -115,10 +153,10 @@
                 >
                   <div class="flex items-center gap-2 mb-1.5">
                     <div
-                      class="w-4 h-4 rounded-full flex-shrink-0"
+                      class="flex-shrink-0 w-4 h-4 rounded-full"
                       :class="`bg-player-${player.color}`"
                     ></div>
-                    <span class="text-white text-sm font-semibold truncate">
+                    <span class="text-sm font-semibold text-white truncate">
                       {{ player.name }}
                     </span>
                     <span
@@ -128,23 +166,23 @@
                       BOT
                     </span>
                   </div>
-                  <div class="text-white/70 text-xs leading-tight">
+                  <div class="text-xs leading-tight text-white/70">
                     {{ player.cardsInHand.length }} Hand / {{ player.cardsInDeck.length }} Deck
                   </div>
                 </div>
               </div>
-              <div v-else class="text-white/70 text-sm text-center py-3">No players yet</div>
+              <div v-else class="py-3 text-sm text-center text-white/70">No players yet</div>
             </div>
 
             <!-- Demo Actions -->
-            <div class="glass-card p-4">
-              <h3 class="text-base font-bold text-white mb-3">Demo Actions</h3>
+            <div class="p-4 glass-card">
+              <h3 class="mb-3 text-base font-bold text-white">Demo Actions</h3>
               <div class="space-y-2">
                 <button
                   @click="handleResetGame"
                   class="w-full glass-strong hover:bg-white/30 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all"
                 >
-                  🔄 Restart Game
+                  Restart Game
                 </button>
                 <button
                   @click="placeRandomCard"
@@ -163,13 +201,13 @@
             </div>
 
             <!-- Room Info -->
-            <div class="glass-card p-4">
+            <div class="p-4 glass-card">
               <div class="mb-3">
-                <p class="text-white/80 text-sm mb-2">
-                  Room: <span class="font-mono text-white font-bold">{{ code }}</span>
+                <p class="mb-2 text-sm text-white/80">
+                  Room: <span class="font-mono font-bold text-white">{{ code }}</span>
                 </p>
                 <span
-                  class="text-xs glass px-3 py-1 rounded-full text-white/70 inline-block font-medium"
+                  class="inline-block px-3 py-1 text-xs font-medium rounded-full glass text-white/70"
                 >
                   Demo Mode
                 </span>
@@ -196,7 +234,17 @@ import BoardComponent from '@/components/BoardComponent.vue'
 import CardHandComponent from '@/components/CardHandComponent.vue'
 import WinDialog from '@/components/WinDialog.vue'
 import FirstTurnModal from '@/components/FirstTurnModal.vue'
-import { PlayerColor, type Card, type Player, type Position } from '@/types/game'
+import WaitingRoomModal from '@/components/WaitingRoomModal.vue'
+import GameInfoModal from '@/components/GameInfoModal.vue'
+import {
+  PlayerColor,
+  type Card,
+  type Player,
+  type Position,
+  type RoomSlot,
+  type RoomConfig,
+} from '@/types/game'
+import { generateBotId, generateCardId } from '@/utils/id'
 
 const router = useRouter()
 const route = useRoute()
@@ -212,7 +260,11 @@ const showMobileMenu = ref(false)
 const isBotPlaying = ref(false)
 const showWinDialog = ref(false)
 const showFirstTurnModal = ref(false)
-const isGameInitialized = ref(false)
+const showWaitingRoom = ref(false)
+const showGameInfo = ref(false)
+const currentPlayerId = ref('')
+const isRoomMaster = ref(false)
+const roomConfig = ref<RoomConfig | null>(null)
 
 // Get current human player's cards
 const currentPlayerCards = computed(() => {
@@ -230,11 +282,7 @@ watch(
   () => gameStore.currentPlayer,
   (currentPlayer) => {
     // Only auto-play if game is in progress (not waiting for first turn)
-    if (
-      currentPlayer?.isBot &&
-      !isBotPlaying.value &&
-      gameStore.status === 'in_progress'
-    ) {
+    if (currentPlayer?.isBot && !isBotPlaying.value && gameStore.status === 'in_progress') {
       // Bot's turn - play automatically after a short delay
       isBotPlaying.value = true
       setTimeout(() => {
@@ -265,16 +313,141 @@ onMounted(() => {
     return
   }
 
-  // Auto-initialize game on first load
-  if (!isGameInitialized.value && gameStore.players.length === 0) {
-    initDemoGame()
-    isGameInitialized.value = true
-    // Show first turn modal after initialization
-    setTimeout(() => {
-      showFirstTurnModal.value = true
-    }, 500)
+  // Validate player name - if not found, redirect to home
+  const playerName = localStorage.getItem('playerName')
+  if (!playerName || playerName.trim().length < 2) {
+    alert('Please enter your name first')
+    router.push('/')
+    return
+  }
+
+  // Load player ID
+  const playerId = localStorage.getItem('playerId')
+  if (!playerId) {
+    alert('Invalid player session')
+    router.push('/')
+    return
+  }
+  currentPlayerId.value = playerId
+
+  // Check if room master
+  isRoomMaster.value = localStorage.getItem('isRoomMaster') === 'true'
+
+  // Load room config if room master
+  if (isRoomMaster.value) {
+    const savedConfig = localStorage.getItem('roomConfig')
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig)
+
+      // Initialize full room config
+      roomConfig.value = {
+        roomCode: code.value,
+        maxPlayers: 4,
+        humanPlayers: config.humanPlayers,
+        bots: config.bots,
+        waitingSlots: 4 - config.humanPlayers - config.bots,
+        roomMaster: playerId,
+        heuristicWeights: config.heuristicWeights,
+        createdAt: new Date(),
+      }
+
+      gameStore.initRoomConfig(roomConfig.value)
+
+      // Initialize room slots
+      initializeRoomSlots()
+
+      // Show waiting room modal
+      showWaitingRoom.value = true
+    }
+  } else {
+    // For joiners, show waiting room (in real implementation, get from WebSocket)
+    // For now, just show a message
+    alert('Join room feature will be implemented with WebSocket')
+    router.push('/')
   }
 })
+
+// Initialize room slots based on config
+function initializeRoomSlots() {
+  if (!roomConfig.value) return
+
+  const slots: RoomSlot[] = []
+  const colors: PlayerColor[] = [
+    PlayerColor.GREEN,
+    PlayerColor.RED,
+    PlayerColor.BLUE,
+    PlayerColor.PURPLE,
+  ]
+  const playerName = localStorage.getItem('playerName') || 'Player'
+
+  // First slot is always the room creator (human player)
+  const creatorPlayer: Player = {
+    id: currentPlayerId.value,
+    name: playerName,
+    color: colors[0]!,
+    isBot: false,
+    cardsInHand: [],
+    cardsInDeck: [],
+    totalCards: 18,
+    score: 0,
+  }
+
+  slots.push({
+    id: `slot-0`,
+    type: 'player',
+    player: creatorPlayer,
+    color: colors[0]!,
+  })
+
+  // Add bots (already decided at room creation)
+  for (let i = 0; i < roomConfig.value.bots; i++) {
+    const slotIndex = slots.length
+    const botPlayer: Player = {
+      id: generateBotId(),
+      name: `Bot ${i + 1}`,
+      color: colors[slotIndex] || PlayerColor.BLUE,
+      isBot: true,
+      cardsInHand: [],
+      cardsInDeck: [],
+      totalCards: 18,
+      score: 0,
+    }
+
+    slots.push({
+      id: `slot-${slotIndex}`,
+      type: 'bot',
+      player: botPlayer,
+      color: colors[slotIndex] || PlayerColor.BLUE,
+    })
+  }
+
+  // Add waiting slots for other human players (humanPlayers - 1 because creator already joined)
+  const waitingHumanSlots = roomConfig.value.humanPlayers - 1
+  for (let i = 0; i < waitingHumanSlots; i++) {
+    const slotIndex = slots.length
+    slots.push({
+      id: `slot-${slotIndex}`,
+      type: 'waiting', // Waiting for human players to join
+      color: colors[slotIndex] || PlayerColor.PURPLE,
+    })
+  }
+
+  // Calculate remaining empty slots (4 total - creator - bots - waiting)
+  const totalUsedSlots = 1 + roomConfig.value.bots + waitingHumanSlots
+  const emptySlots = 4 - totalUsedSlots
+
+  // Add empty slots (can add bots here)
+  for (let i = 0; i < emptySlots; i++) {
+    const slotIndex = slots.length
+    slots.push({
+      id: `slot-${slotIndex}`,
+      type: 'waiting', // Using 'waiting' type, but will show as "Empty slot"
+      color: colors[slotIndex] || PlayerColor.PURPLE,
+    })
+  }
+
+  gameStore.setRoomSlots(slots)
+}
 
 const toggleCoordinates = () => {
   showCoordinates.value = !showCoordinates.value
@@ -284,13 +457,55 @@ const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
 }
 
-const handlePlayAgain = () => {
-  showWinDialog.value = false
-  initDemoGame()
-  // Show first turn modal again
+// Waiting Room handlers
+const handleConvertToBot = (slotIndex: number) => {
+  gameStore.convertSlotToBot(slotIndex)
+
+  // Update the slot's player with a bot
+  const slot = gameStore.roomSlots[slotIndex]
+  if (slot) {
+    const botPlayer: Player = {
+      id: generateBotId(),
+      name: `Bot ${slotIndex + 1}`,
+      color: slot.color,
+      isBot: true,
+      cardsInHand: [],
+      cardsInDeck: [],
+      totalCards: 18,
+      score: 0,
+    }
+    slot.player = botPlayer
+  }
+}
+
+const handleStartGame = () => {
+  // Close waiting room
+  showWaitingRoom.value = false
+
+  // Collect all players from slots (excluding waiting)
+  const activePlayers = gameStore.roomSlots
+    .filter((slot) => slot.type === 'player' || slot.type === 'bot')
+    .map((slot) => slot.player!)
+
+  // Initialize game with players
+  initDemoGameWithPlayers(activePlayers)
+
+  // Show first turn modal
   setTimeout(() => {
     showFirstTurnModal.value = true
   }, 500)
+}
+
+const handleLeaveWaitingRoom = () => {
+  router.push('/')
+}
+
+const handlePlayAgain = () => {
+  showWinDialog.value = false
+
+  // Reset and show waiting room again
+  showWaitingRoom.value = true
+  initializeRoomSlots()
 }
 
 const handleFirstTurnSelected = (firstPlayer: Player) => {
@@ -299,11 +514,8 @@ const handleFirstTurnSelected = (firstPlayer: Player) => {
 }
 
 const handleResetGame = () => {
-  initDemoGame()
-  isGameInitialized.value = true
-  setTimeout(() => {
-    showFirstTurnModal.value = true
-  }, 500)
+  showWaitingRoom.value = true
+  initializeRoomSlots()
 }
 
 // Bot plays turn automatically
@@ -525,7 +737,8 @@ const handleCardDrop = (card: Card, position: Position) => {
   highlightedCards.value = []
 }
 
-const initDemoGame = () => {
+// Initialize game with specific players (from waiting room)
+const initDemoGameWithPlayers = (activePlayers: Player[]) => {
   // Helper function to create cards for a player
   const createCardsForPlayer = (playerId: string, color: PlayerColor) => {
     const allCards: Card[] = []
@@ -533,7 +746,7 @@ const initDemoGame = () => {
     for (let value = 1; value <= 9; value++) {
       for (let count = 0; count < 2; count++) {
         allCards.push({
-          id: `${playerId}-card-${value}-${count}`,
+          id: generateCardId(),
           value: value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
           color: color,
           playerId: playerId,
@@ -553,58 +766,14 @@ const initDemoGame = () => {
     return allCards
   }
 
-  // Create 4 players: 1 human + 3 bots with different colors
-  const players: Player[] = [
-    {
-      id: 'player-1',
-      name: 'You',
-      color: PlayerColor.GREEN,
-      isBot: false,
-      cardsInHand: [],
-      cardsInDeck: [],
-      totalCards: 18,
-      score: 0,
-    },
-    {
-      id: 'bot-1',
-      name: 'Bot Red',
-      color: PlayerColor.RED,
-      isBot: true,
-      cardsInHand: [],
-      cardsInDeck: [],
-      totalCards: 18,
-      score: 0,
-    },
-    {
-      id: 'bot-2',
-      name: 'Bot Blue',
-      color: PlayerColor.BLUE,
-      isBot: true,
-      cardsInHand: [],
-      cardsInDeck: [],
-      totalCards: 18,
-      score: 0,
-    },
-    {
-      id: 'bot-3',
-      name: 'Bot Purple',
-      color: PlayerColor.PURPLE,
-      isBot: true,
-      cardsInHand: [],
-      cardsInDeck: [],
-      totalCards: 18,
-      score: 0,
-    },
-  ]
-
   // Distribute cards to each player
-  players.forEach((player) => {
+  activePlayers.forEach((player) => {
     const allCards = createCardsForPlayer(player.id, player.color)
     player.cardsInHand = allCards.slice(0, 5) // First 5 cards in hand
     player.cardsInDeck = allCards.slice(5) // Remaining 13 cards in deck
   })
 
-  gameStore.initGame(code.value, players)
+  gameStore.initGame(code.value, activePlayers)
 }
 
 function placeRandomCard() {

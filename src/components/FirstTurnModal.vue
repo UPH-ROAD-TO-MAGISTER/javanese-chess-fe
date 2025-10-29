@@ -73,10 +73,7 @@
               >
                 BOT will play automatically
               </span>
-              <span
-                v-else
-                class="inline-block text-xs glass px-3 py-1 rounded-full text-green-400"
-              >
+              <span v-else class="inline-block text-xs glass px-3 py-1 rounded-full text-green-400">
                 Your turn!
               </span>
             </div>

@@ -10,8 +10,9 @@ import type {
   BoardCell,
   GameStatus,
   WinCondition,
+  RoomConfig,
+  RoomSlot,
 } from '@/types/game'
-import { PlayerColor } from '@/types/game'
 
 /**
  * Initialize empty 9x9 board
@@ -35,6 +36,8 @@ function createEmptyBoard(): Board {
 export const useGameStore = defineStore('game', () => {
   // State
   const roomCode = ref<string>('')
+  const roomConfig = ref<RoomConfig | null>(null)
+  const roomSlots = ref<RoomSlot[]>([])
   const status = ref<GameStatus>('waiting' as GameStatus)
   const board = ref<Board>(createEmptyBoard())
   const players = ref<Player[]>([])
@@ -53,6 +56,8 @@ export const useGameStore = defineStore('game', () => {
 
   const gameState = computed<GameState>(() => ({
     roomCode: roomCode.value,
+    roomConfig: roomConfig.value!,
+    roomSlots: roomSlots.value,
     status: status.value,
     board: board.value,
     players: players.value,
@@ -359,9 +364,30 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function initRoomConfig(config: RoomConfig) {
+    roomConfig.value = config
+    roomCode.value = config.roomCode
+  }
+
+  function setRoomSlots(slots: RoomSlot[]) {
+    roomSlots.value = slots
+  }
+
+  function convertSlotToBot(slotIndex: number) {
+    if (roomSlots.value[slotIndex] && roomSlots.value[slotIndex].type === 'waiting') {
+      roomSlots.value[slotIndex].type = 'bot'
+    }
+  }
+
+  function setStatus(newStatus: GameStatus) {
+    status.value = newStatus
+  }
+
   return {
     // State
     roomCode,
+    roomConfig,
+    roomSlots,
     status,
     board,
     players,
@@ -379,6 +405,10 @@ export const useGameStore = defineStore('game', () => {
 
     // Actions
     initGame,
+    initRoomConfig,
+    setRoomSlots,
+    convertSlotToBot,
+    setStatus,
     setFirstPlayer,
     resetGame,
     selectCard,

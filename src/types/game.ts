@@ -94,6 +94,8 @@ export interface WinCondition {
  */
 export interface GameState {
   roomCode: string
+  roomConfig: RoomConfig
+  roomSlots: RoomSlot[]
   status: GameStatus
   board: Board
   players: Player[]
@@ -106,12 +108,38 @@ export interface GameState {
 }
 
 /**
+ * Heuristic weights for bot AI
+ */
+export interface HeuristicWeights {
+  win: number // Weight for winning move (4-in-a-row)
+  blockOpponent3: number // Weight for blocking opponent's 3-in-a-row
+  create3InRow: number // Weight for creating 3-in-a-row
+  create2InRow: number // Weight for creating 2-in-a-row
+  cardValue: number // Weight for card value
+  centerControl: number // Weight for center control
+  replacement: number // Weight for replacing opponent card
+}
+
+/**
+ * Room slot - can be player, bot, or waiting
+ */
+export interface RoomSlot {
+  id: string
+  type: 'player' | 'bot' | 'waiting'
+  player?: Player
+  color: PlayerColor
+}
+
+/**
  * Room configuration
  */
 export interface RoomConfig {
   roomCode: string
-  maxPlayers: number
-  numberOfBots: number
+  maxPlayers: number // Total slots (always 4)
+  humanPlayers: number // Number of human player slots
+  bots: number // Number of bot slots
+  waitingSlots: number // Empty slots waiting for players
+  roomMaster: string // Player ID of room creator
+  heuristicWeights: HeuristicWeights
   createdAt: Date
-  createdBy: string
 }

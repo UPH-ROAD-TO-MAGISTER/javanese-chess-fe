@@ -6,27 +6,27 @@
       @click.self="emit('close')"
     >
       <div
-        class="glass-strong rounded-2xl p-8 max-w-md w-full shadow-2xl animate-slide-in transform"
+        class="w-full max-w-md p-8 transform shadow-2xl glass-strong rounded-2xl animate-slide-in"
       >
         <!-- Confetti/Celebration Icon -->
-        <div class="text-center mb-6">
-          <div class="text-6xl mb-4 animate-bounce">🎉</div>
-          <h2 class="text-3xl font-bold text-white mb-2">Victory!</h2>
+        <div class="mb-6 text-center">
+          <div class="mb-4 text-6xl animate-bounce">🎉</div>
+          <h2 class="mb-2 text-3xl font-bold text-white">Victory!</h2>
           <div
-            class="inline-flex items-center gap-2 glass-light px-4 py-2 rounded-full"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-light"
             :class="`bg-player-${winner?.color}/20`"
           >
             <div class="w-6 h-6 rounded-full" :class="`bg-player-${winner?.color}`"></div>
-            <span class="text-white font-semibold text-lg">{{ winner?.name }}</span>
+            <span class="text-lg font-semibold text-white">{{ winner?.name }}</span>
           </div>
         </div>
 
         <!-- Win Type Info -->
-        <div class="glass-card p-4 rounded-lg mb-6">
-          <div class="text-center text-white/80 text-sm mb-2">Win Condition</div>
+        <div class="p-4 mb-6 rounded-lg glass-card">
+          <div class="mb-2 text-sm text-center text-white/80">Win Condition</div>
           <div class="text-center">
             <span
-              class="inline-flex items-center gap-2 text-white font-semibold text-lg capitalize"
+              class="inline-flex items-center gap-2 text-lg font-semibold text-white capitalize"
             >
               <span v-if="winType === 'horizontal'">↔️ Horizontal</span>
               <span v-else-if="winType === 'vertical'">↕️ Vertical</span>
@@ -38,12 +38,12 @@
 
         <!-- Winning Cards Preview -->
         <div v-if="winningCards && winningCards.length > 0" class="mb-6">
-          <div class="text-center text-white/60 text-xs mb-3">Winning Cards</div>
+          <div class="mb-3 text-xs text-center text-white/60">Winning Cards</div>
           <div class="flex justify-center gap-2">
             <div
               v-for="(pos, index) in winningCards"
               :key="index"
-              class="glass-strong rounded-lg p-2 border-2 animate-card-place"
+              class="p-2 border-2 rounded-lg glass-strong animate-card-place"
               :class="`border-player-${winner?.color}`"
               :style="{ animationDelay: `${index * 100}ms` }"
             >
@@ -58,15 +58,15 @@
         <div class="flex gap-3">
           <button
             @click="emit('playAgain')"
-            class="flex-1 glass-strong hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+            class="flex-1 px-6 py-3 font-semibold text-white transition-all transform rounded-lg glass-strong hover:bg-white/30 hover:scale-105"
           >
-            🔄 Play Again
+            Play Again
           </button>
           <button
             @click="emit('close')"
-            class="flex-1 glass-light hover:bg-white/15 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+            class="flex-1 px-6 py-3 font-semibold text-white transition-all transform rounded-lg glass-light hover:bg-white/15 hover:scale-105"
           >
-            ✕ Close
+            Close
           </button>
         </div>
       </div>
