@@ -5,7 +5,7 @@
     @click.self="closeModal"
   >
     <div
-      class="glass-card p-6 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slide-in"
+      class="glass-card p-6 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-slide-in"
       @click.stop
     >
       <div class="flex items-center justify-between mb-6">
@@ -26,10 +26,27 @@
           Configure the weights for bot AI decision making. Higher values mean higher priority.
         </p>
 
-        <!-- Win Move -->
+        <!-- Basic Move -->
         <div class="glass-light rounded-lg p-4">
           <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">🏆 Win Move (4-in-a-row)</label>
+            <label class="text-white font-semibold">✅ Legal Move Available</label>
+            <span class="text-white font-mono text-lg">{{ localWeights.legalMove }}</span>
+          </div>
+          <input
+            type="range"
+            v-model.number="localWeights.legalMove"
+            min="0"
+            max="100"
+            step="5"
+            class="w-full"
+          />
+          <p class="text-white/60 text-xs mt-1">Base value for any legal move</p>
+        </div>
+
+        <!-- Win Move -->
+        <div class="glass-light rounded-lg p-4 border border-yellow-500/30">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-white font-semibold">🏆 Winning Move (4 Aligned)</label>
             <span class="text-white font-mono text-lg">{{ localWeights.win }}</span>
           </div>
           <input
@@ -37,160 +54,278 @@
             v-model.number="localWeights.win"
             min="0"
             max="20000"
-            step="100"
+            step="500"
             class="w-full"
           />
-          <p class="text-white/60 text-xs mt-1">
-            Priority for moves that create 4-in-a-row (winning move)
-          </p>
+          <p class="text-white/60 text-xs mt-1">Highest priority - complete 4-in-a-row</p>
         </div>
 
-        <!-- Block Opponent 3-in-a-row -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">🛡️ Block Opponent 3-in-a-row</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.blockOpponent3 }}</span>
+        <!-- Threat Detection Section -->
+        <div class="glass-strong rounded-lg p-4">
+          <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+            <span>🚨</span> Threat Detection (3 Opponent Cards Aligned)
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Detect Threat (3 aligned)</label>
+                <span class="text-white font-mono">{{ localWeights.detectThreat3 }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.detectThreat3"
+                min="0"
+                max="500"
+                step="10"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Overwrite Opponent Card</label>
+                <span class="text-white font-mono">{{ localWeights.overwriteThreat }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.overwriteThreat"
+                min="0"
+                max="500"
+                step="10"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Block Threat (Middle)</label>
+                <span class="text-white font-mono">{{ localWeights.blockThreatMiddle }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.blockThreatMiddle"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Block Threat (Edge)</label>
+                <span class="text-white font-mono">{{ localWeights.blockThreatEdge }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.blockThreatEdge"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Block Opponent Path</label>
+                <span class="text-white font-mono">{{ localWeights.blockOpponentPath }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.blockOpponentPath"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <!-- Threat Card Values 1-9 -->
+            <div class="border-t border-white/10 pt-3 mt-3">
+              <p class="text-white/70 text-xs mb-2">Card Values for Threat (1-9):</p>
+              <div class="grid grid-cols-3 gap-2">
+                <div v-for="i in 9" :key="`threat-${i}`">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-white text-xs">Card {{ i }}</label>
+                    <span class="text-white/70 text-xs font-mono">{{ localWeights[`threatCardValue${i}` as keyof typeof localWeights] }}</span>
+                  </div>
+                  <input
+                    type="range"
+                    v-model.number="localWeights[`threatCardValue${i}` as keyof typeof localWeights]"
+                    min="0"
+                    max="200"
+                    step="5"
+                    class="w-full h-1"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <input
-            type="range"
-            v-model.number="localWeights.blockOpponent3"
-            min="0"
-            max="10000"
-            step="100"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">
-            Priority for blocking opponent's potential winning move
-          </p>
         </div>
 
-        <!-- Create 3-in-a-row -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">🎯 Create 3-in-a-row</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.create3InRow }}</span>
+        <!-- Potential Threat Section -->
+        <div class="glass-strong rounded-lg p-4">
+          <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+            <span>⚠️</span> Potential Threat (Adjacent Cards)
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Detect Potential Threat</label>
+                <span class="text-white font-mono">{{ localWeights.detectPotentialThreat }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.detectPotentialThreat"
+                min="0"
+                max="300"
+                step="10"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Overwrite Potential Threat</label>
+                <span class="text-white font-mono">{{ localWeights.overwritePotentialThreat }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.overwritePotentialThreat"
+                min="0"
+                max="300"
+                step="10"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Block Potential Path</label>
+                <span class="text-white font-mono">{{ localWeights.blockPotentialPath }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.blockPotentialPath"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <!-- Potential Threat Card Values 1-9 -->
+            <div class="border-t border-white/10 pt-3 mt-3">
+              <p class="text-white/70 text-xs mb-2">Card Values for Potential Threat (1-9):</p>
+              <div class="grid grid-cols-3 gap-2">
+                <div v-for="i in 9" :key="`potential-${i}`">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-white text-xs">Card {{ i }}</label>
+                    <span class="text-white/70 text-xs font-mono">{{ localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights] }}</span>
+                  </div>
+                  <input
+                    type="range"
+                    v-model.number="localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights]"
+                    min="0"
+                    max="200"
+                    step="5"
+                    class="w-full h-1"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <input
-            type="range"
-            v-model.number="localWeights.create3InRow"
-            min="0"
-            max="5000"
-            step="50"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">Setup for potential win in next turn</p>
         </div>
 
-        <!-- Create 2-in-a-row -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">📍 Create 2-in-a-row</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.create2InRow }}</span>
+        <!-- Own Strategy Section -->
+        <div class="glass-strong rounded-lg p-4">
+          <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+            <span>🎯</span> Own Strategy
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Create 2-in-a-Row</label>
+                <span class="text-white font-mono">{{ localWeights.create2InRow }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.create2InRow"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Create 3-in-a-Row</label>
+                <span class="text-white font-mono">{{ localWeights.create3InRow }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.create3InRow"
+                min="0"
+                max="300"
+                step="10"
+                class="w-full"
+              />
+            </div>
           </div>
-          <input
-            type="range"
-            v-model.number="localWeights.create2InRow"
-            min="0"
-            max="1000"
-            step="10"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">Early game positioning strategy</p>
         </div>
 
-        <!-- Card Value -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">💎 Card Value</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.cardValue }}</span>
+        <!-- Card Strategy Section -->
+        <div class="glass-strong rounded-lg p-4">
+          <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+            <span>🃏</span> Card Strategy
+          </h3>
+
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Play Smallest Card First</label>
+                <span class="text-white font-mono">{{ localWeights.playSmallestCard }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.playSmallestCard"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-white text-sm">Place Near Own Card</label>
+                <span class="text-white font-mono">{{ localWeights.placeNearOwnCard }}</span>
+              </div>
+              <input
+                type="range"
+                v-model.number="localWeights.placeNearOwnCard"
+                min="0"
+                max="200"
+                step="5"
+                class="w-full"
+              />
+            </div>
           </div>
-          <input
-            type="range"
-            v-model.number="localWeights.cardValue"
-            min="0"
-            max="100"
-            step="1"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">
-            Bonus for playing higher value cards (1-9)
-          </p>
-        </div>
-
-        <!-- Center Control -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">🎲 Center Control</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.centerControl }}</span>
-          </div>
-          <input
-            type="range"
-            v-model.number="localWeights.centerControl"
-            min="0"
-            max="50"
-            step="1"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">
-            Strategic value for controlling center positions
-          </p>
-        </div>
-
-        <!-- Replacement -->
-        <div class="glass-light rounded-lg p-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-white font-semibold">⚔️ Card Replacement</label>
-            <span class="text-white font-mono text-lg">{{ localWeights.replacement }}</span>
-          </div>
-          <input
-            type="range"
-            v-model.number="localWeights.replacement"
-            min="0"
-            max="500"
-            step="10"
-            class="w-full"
-          />
-          <p class="text-white/60 text-xs mt-1">
-            Bonus for replacing opponent's cards with higher value
-          </p>
-        </div>
-
-        <!-- Preset Buttons -->
-        <div class="flex gap-2 mt-6">
-          <button
-            @click="applyPreset('easy')"
-            class="flex-1 glass-light hover:bg-white/15 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-all"
-          >
-            Easy
-          </button>
-          <button
-            @click="applyPreset('medium')"
-            class="flex-1 glass-light hover:bg-white/15 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-all"
-          >
-            Medium
-          </button>
-          <button
-            @click="applyPreset('hard')"
-            class="flex-1 glass-light hover:bg-white/15 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-all"
-          >
-            Hard
-          </button>
-          <button
-            @click="resetToDefault"
-            class="flex-1 glass-light hover:bg-white/15 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-all"
-          >
-            Reset
-          </button>
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex gap-3 mt-8">
+      <!-- Action Buttons -->
+      <div class="flex gap-3 mt-6 pt-6 border-t border-white/10">
         <button
-          @click="closeModal"
-          class="flex-1 glass-light hover:bg-white/15 text-white font-semibold py-3 px-6 rounded-lg transition-all"
+          @click="resetToDefault"
+          class="flex-1 glass hover:glass-strong text-white font-bold py-3 px-6 rounded-lg transition-all"
         >
-          Cancel
+          Reset to Default
         </button>
         <button
           @click="saveConfig"
@@ -230,13 +365,38 @@ watch(
 )
 
 const defaultWeights: HeuristicWeights = {
+  legalMove: 30,
   win: 10000,
-  blockOpponent3: 5000,
-  create3InRow: 1000,
-  create2InRow: 100,
-  cardValue: 10,
-  centerControl: 5,
-  replacement: 50,
+  detectThreat3: 200,
+  overwriteThreat: 200,
+  blockThreatMiddle: 75,
+  blockThreatEdge: 50,
+  blockOpponentPath: 100,
+  threatCardValue1: 20,
+  threatCardValue2: 30,
+  threatCardValue3: 40,
+  threatCardValue4: 50,
+  threatCardValue5: 60,
+  threatCardValue6: 70,
+  threatCardValue7: 80,
+  threatCardValue8: 90,
+  threatCardValue9: 100,
+  detectPotentialThreat: 100,
+  overwritePotentialThreat: 125,
+  blockPotentialPath: 70,
+  potentialThreatCardValue1: 100,
+  potentialThreatCardValue2: 90,
+  potentialThreatCardValue3: 80,
+  potentialThreatCardValue4: 70,
+  potentialThreatCardValue5: 60,
+  potentialThreatCardValue6: 50,
+  potentialThreatCardValue7: 40,
+  potentialThreatCardValue8: 30,
+  potentialThreatCardValue9: 20,
+  create2InRow: 50,
+  create3InRow: 100,
+  playSmallestCard: 60,
+  placeNearOwnCard: 60,
 }
 
 function closeModal() {
@@ -251,76 +411,48 @@ function saveConfig() {
 function resetToDefault() {
   localWeights.value = { ...defaultWeights }
 }
-
-function applyPreset(difficulty: 'easy' | 'medium' | 'hard') {
-  switch (difficulty) {
-    case 'easy':
-      localWeights.value = {
-        win: 5000,
-        blockOpponent3: 1000,
-        create3InRow: 200,
-        create2InRow: 50,
-        cardValue: 20,
-        centerControl: 10,
-        replacement: 30,
-      }
-      break
-    case 'medium':
-      localWeights.value = { ...defaultWeights }
-      break
-    case 'hard':
-      localWeights.value = {
-        win: 15000,
-        blockOpponent3: 8000,
-        create3InRow: 2000,
-        create2InRow: 300,
-        cardValue: 5,
-        centerControl: 3,
-        replacement: 100,
-      }
-      break
-  }
-}
 </script>
 
 <style scoped>
-/* Range input styling */
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom range slider styling */
 input[type='range'] {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  outline: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  height: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
 }
 
 input[type='range']::-webkit-slider-thumb {
   appearance: none;
-  width: 18px;
-  height: 18px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  width: 1rem;
+  height: 1rem;
+  background: white;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s;
-}
-
-input[type='range']::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border: none;
+  width: 1rem;
+  height: 1rem;
+  background: white;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s;
-}
-
-input[type='range']::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+  border: 0;
 }
 </style>

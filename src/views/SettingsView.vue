@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-4xl p-8 glass-card">
+    <div class="w-full max-w-2xl p-8 glass-card">
       <div class="flex items-center justify-between mb-8">
         <h1 class="text-3xl font-bold text-white">Settings</h1>
         <button
@@ -12,6 +12,53 @@
       </div>
 
       <div class="space-y-8">
+        <!-- Game Mode Settings -->
+        <div class="p-6 rounded-lg glass-light">
+          <h2 class="mb-4 text-xl font-semibold text-white">Game Mode</h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium text-white">Current Mode</p>
+                <p class="text-sm text-white/60">
+                  {{ gameModeStore.mode === 'demo' ? 'Demo Mode (Local)' : 'API Mode (Backend Connected)' }}
+                </p>
+              </div>
+              <button
+                @click="toggleGameMode"
+                class="px-4 py-2 text-white rounded-lg transition-all"
+                :class="
+                  gameModeStore.mode === 'demo'
+                    ? 'bg-blue-500/50 hover:bg-blue-500/70'
+                    : 'bg-green-500/50 hover:bg-green-500/70'
+                "
+              >
+                {{ gameModeStore.mode === 'demo' ? '🎮 Demo' : '🌐 API' }}
+              </button>
+            </div>
+
+            <div class="p-4 rounded-lg bg-white/5">
+              <div v-if="gameModeStore.mode === 'demo'" class="space-y-2">
+                <p class="text-sm font-semibold text-blue-400">Demo Mode Features:</p>
+                <ul class="text-xs text-white/70 space-y-1">
+                  <li>✅ Works offline</li>
+                  <li>✅ Frontend shuffle & AI</li>
+                  <li>✅ Instant gameplay</li>
+                  <li>⚠️ No multiplayer support</li>
+                </ul>
+              </div>
+              <div v-else class="space-y-2">
+                <p class="text-sm font-semibold text-green-400">API Mode Features:</p>
+                <ul class="text-xs text-white/70 space-y-1">
+                  <li>✅ Backend-driven gameplay</li>
+                  <li>✅ Real-time WebSocket</li>
+                  <li>✅ Multiplayer ready</li>
+                  <li>✅ Synchronized state</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Visual Settings -->
         <div class="p-6 rounded-lg glass-light">
           <h2 class="mb-4 text-xl font-semibold text-white">Visual Settings</h2>
@@ -23,7 +70,7 @@
               </div>
               <button
                 @click="toggleSetting('showValidMoves')"
-                class="relative inline-flex items-center h-6 transition-colors rounded-full w-11"
+                class="relative inline-flex items-center w-16 h-6 transition-colors rounded-full md:w-11"
                 :class="settingsStore.visual.showValidMoves ? 'bg-green-500' : 'bg-white/20'"
               >
                 <span
@@ -40,7 +87,7 @@
               </div>
               <button
                 @click="toggleSetting('showCardPreview')"
-                class="relative inline-flex items-center h-6 transition-colors rounded-full w-11"
+                class="relative inline-flex items-center w-16 h-6 transition-colors rounded-full md:w-11"
                 :class="settingsStore.visual.showCardPreview ? 'bg-green-500' : 'bg-white/20'"
               >
                 <span
@@ -57,7 +104,7 @@
               </div>
               <button
                 @click="toggleSetting('enableAnimations')"
-                class="relative inline-flex items-center h-6 transition-colors rounded-full w-11"
+                class="relative inline-flex items-center w-16 h-6 transition-colors rounded-full md:w-11"
                 :class="settingsStore.visual.enableAnimations ? 'bg-green-500' : 'bg-white/20'"
               >
                 <span
@@ -84,17 +131,20 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useSettingsStore } from '@/stores/settings'
+import { useGameModeStore } from '@/stores/gameMode'
 import type { VisualSettings } from '@/types/settings'
 
 const router = useRouter()
 const settingsStore = useSettingsStore()
+const gameModeStore = useGameModeStore()
 
 function toggleSetting(key: keyof VisualSettings) {
   settingsStore.toggleVisualSetting(key)
 }
 
-function saveHeuristic() {
-  settingsStore.saveSettings()
+function toggleGameMode() {
+  const newMode = gameModeStore.mode === 'demo' ? 'api' : 'demo'
+  gameModeStore.setMode(newMode)
 }
 
 function resetSettings() {

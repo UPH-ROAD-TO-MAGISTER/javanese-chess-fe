@@ -84,12 +84,19 @@
           </div>
         </div>
 
-        <!-- Demo Notice Badge (bright blue glass) -->
+        <!-- Mode Badge -->
         <div class="text-center animate-fade-in-delay-2">
           <div
+            v-if="gameModeStore.isDemoMode()"
             class="inline-block px-4 py-2.5 rounded-lg glass border border-blue-400/60 bg-blue-500/30"
           >
             <p class="text-xs font-bold text-blue-100">🎮 DEMO MODE • No Backend Required</p>
+          </div>
+          <div
+            v-else
+            class="inline-block px-4 py-2.5 rounded-lg glass border border-green-400/60 bg-green-500/30"
+          >
+            <p class="text-xs font-bold text-green-100">🌐 API MODE • Connected to Backend</p>
           </div>
         </div>
       </div>
@@ -417,6 +424,14 @@
       @close="showCreateDialog = false"
       @create="handleCreateRoom"
     />
+
+    <!-- Error Modal -->
+    <ErrorModal
+      :show="!!creatingError"
+      :message="creatingError"
+      is-error
+      @close="creatingError = ''"
+    />
   </div>
 </template>
 
@@ -424,10 +439,13 @@
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateRoomModal from '@/components/CreateRoomModal.vue'
+import ErrorModal from '@/components/ErrorModal.vue'
 import { generatePlayerId, generateRoomCode } from '@/utils/id'
 import type { HeuristicWeights } from '@/types/game'
+import { useGameModeStore } from '@/stores/gameMode'
 
 const router = useRouter()
+const gameModeStore = useGameModeStore()
 
 const showJoinDialog = ref(false)
 const showCreateDialog = ref(false)
@@ -437,6 +455,8 @@ const playerName = ref('')
 const roomCode = ref('')
 const joinError = ref('')
 const nameInputJoin = ref<HTMLInputElement>()
+const isCreatingRoom = ref(false)
+const creatingError = ref('')
 
 // Focus input when join dialog opens
 watch(showJoinDialog, (newVal) => {
@@ -459,33 +479,53 @@ function createRoom() {
   showCreateDialog.value = true
 }
 
-function handleCreateRoom(config: {
+async function handleCreateRoom(config: {
   playerName: string
   humanPlayers: number
   bots: number
   heuristicWeights: HeuristicWeights
 }) {
-  // Generate unique player ID and room code
-  const playerId = generatePlayerId()
-  const roomCode = generateRoomCode()
+  isCreatingRoom.value = true
+  creatingError.value = ''
 
-  // Save to localStorage
-  localStorage.setItem('playerName', config.playerName)
-  localStorage.setItem('playerId', playerId)
-  localStorage.setItem('roomCode', roomCode)
-  localStorage.setItem('isRoomMaster', 'true')
-  localStorage.setItem(
-    'roomConfig',
-    JSON.stringify({
-      humanPlayers: config.humanPlayers,
-      bots: config.bots,
-      heuristicWeights: config.heuristicWeights,
-    }),
-  )
+  try {
+    const playerId = generatePlayerId()
+    const generatedRoomCode = generateRoomCode()
 
-  // Close modal and navigate
-  showCreateDialog.value = false
-  router.push(`/room/${roomCode}`)
+    // Save to localStorage for both modes
+    localStorage.setItem('playerName', config.playerName)
+    localStorage.setItem('playerId', playerId)
+    localStorage.setItem('roomCode', generatedRoomCode)
+    localStorage.setItem('isRoomMaster', 'true')
+    localStorage.setItem(
+      'roomConfig',
+      JSON.stringify({
+        humanPlayers: config.humanPlayers,
+        bots: config.bots,
+        heuristicWeights: config.heuristicWeights
+      })
+    )
+
+    if (gameModeStore.isApiMode()) {
+      // ✅ API MODE: Save mode and navigate to waiting room
+      // API call will be made when "Start Game" is clicked in waiting room
+      console.log('Creating room in API mode - will initialize on start')
+      localStorage.setItem('gameMode', 'api')
+    } else {
+      // ✅ DEMO MODE: Same as before
+      console.log('Creating room in demo mode')
+      localStorage.setItem('gameMode', 'demo')
+    }
+
+    // Close modal and navigate to waiting room
+    showCreateDialog.value = false
+    router.push(`/room/${generatedRoomCode}`)
+  } catch (error) {
+    console.error('Failed to create room:', error)
+    creatingError.value = error instanceof Error ? error.message : 'Failed to create room. Please check your connection and try again.'
+  } finally {
+    isCreatingRoom.value = false
+  }
 }
 
 function handleJoinEnter() {

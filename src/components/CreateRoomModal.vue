@@ -7,32 +7,45 @@
     <div class="glass-card p-8 max-w-lg w-full animate-slide-in">
       <h2 class="text-2xl font-bold text-white mb-6 flex items-center justify-between">
         <span>Create Room</span>
-        <button
-          @click="showHeuristicConfig = true"
-          class="text-white/60 hover:text-white transition-colors"
-          title="Configure Bot AI"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div class="flex items-center gap-2">
+          <!-- Loading indicator for API mode -->
+          <span
+            v-if="isLoadingDefaults"
+            class="text-xs text-blue-400 flex items-center gap-1"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </button>
+            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading defaults...
+          </span>
+          <button
+            @click="showHeuristicConfig = true"
+            class="text-white/60 hover:text-white transition-colors"
+            title="Configure Bot AI"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+        </div>
       </h2>
 
       <div class="space-y-5">
@@ -141,9 +154,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue'
+import { ref, watch, nextTick, computed, onMounted } from 'vue'
 import HeuristicConfigModal from './HeuristicConfigModal.vue'
 import type { HeuristicWeights } from '@/types/game'
+import { useGameModeStore } from '@/stores/gameMode'
+import { apiService } from '@/services/api'
 
 interface Props {
   show: boolean
@@ -162,25 +177,70 @@ const emit = defineEmits<{
   ]
 }>()
 
+const gameModeStore = useGameModeStore()
 const playerName = ref('')
 const error = ref('')
 const nameInput = ref<HTMLInputElement>()
 const humanPlayers = ref(1) // Including the creator
 const botCount = ref(3)
 const showHeuristicConfig = ref(false)
+const isLoadingDefaults = ref(false)
 
 const heuristicWeights = ref<HeuristicWeights>({
+  legalMove: 30,
   win: 10000,
-  blockOpponent3: 5000,
-  create3InRow: 1000,
-  create2InRow: 100,
-  cardValue: 10,
-  centerControl: 5,
-  replacement: 50,
+  detectThreat3: 200,
+  overwriteThreat: 200,
+  blockThreatMiddle: 75,
+  blockThreatEdge: 50,
+  blockOpponentPath: 100,
+  threatCardValue1: 20,
+  threatCardValue2: 30,
+  threatCardValue3: 40,
+  threatCardValue4: 50,
+  threatCardValue5: 60,
+  threatCardValue6: 70,
+  threatCardValue7: 80,
+  threatCardValue8: 90,
+  threatCardValue9: 100,
+  detectPotentialThreat: 100,
+  overwritePotentialThreat: 125,
+  blockPotentialPath: 70,
+  potentialThreatCardValue1: 100,
+  potentialThreatCardValue2: 90,
+  potentialThreatCardValue3: 80,
+  potentialThreatCardValue4: 70,
+  potentialThreatCardValue5: 60,
+  potentialThreatCardValue6: 50,
+  potentialThreatCardValue7: 40,
+  potentialThreatCardValue8: 30,
+  potentialThreatCardValue9: 20,
+  create2InRow: 50,
+  create3InRow: 100,
+  playSmallestCard: 60,
+  placeNearOwnCard: 60,
 })
 
 const totalPlayers = computed(() => humanPlayers.value + botCount.value)
 const waitingSlots = computed(() => 4 - totalPlayers.value)
+
+// Load default heuristic from backend if API mode
+onMounted(async () => {
+  if (gameModeStore.isApiMode()) {
+    try {
+      isLoadingDefaults.value = true
+      console.log('Loading default heuristic from backend...')
+      const defaultWeights = await apiService.getDefaultHeuristic()
+      heuristicWeights.value = defaultWeights
+      console.log('Default heuristic loaded:', defaultWeights)
+    } catch (error) {
+      console.error('Failed to load default heuristic:', error)
+      // Keep using frontend defaults
+    } finally {
+      isLoadingDefaults.value = false
+    }
+  }
+})
 
 // Automatically adjust bot count if total exceeds 4
 watch(humanPlayers, (newVal) => {

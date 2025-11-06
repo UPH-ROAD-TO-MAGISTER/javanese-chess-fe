@@ -2,7 +2,7 @@
   <Transition name="fade">
     <div
       v-if="isVisible"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       @click.self="emit('close')"
     >
       <div
@@ -31,6 +31,8 @@
               <span v-if="winType === 'horizontal'">↔️ Horizontal</span>
               <span v-else-if="winType === 'vertical'">↕️ Vertical</span>
               <span v-else-if="winType === 'diagonal'">↗️ Diagonal</span>
+              <span v-else-if="winType === 'draw'">🤝 Draw</span>
+              <span v-else>✨</span>
               <span class="text-yellow-400">4 in a Row!</span>
             </span>
           </div>
@@ -38,19 +40,27 @@
 
         <!-- Winning Cards Preview -->
         <div v-if="winningCards && winningCards.length > 0" class="mb-6">
-          <div class="mb-3 text-xs text-center text-white/60">Winning Cards</div>
-          <div class="flex justify-center gap-2">
+          <div class="mb-3 text-sm font-semibold text-center text-white">
+            🎯 Winning Line Positions
+          </div>
+          <div class="flex flex-wrap justify-center gap-2">
             <div
               v-for="(pos, index) in winningCards"
               :key="index"
-              class="p-2 border-2 rounded-lg glass-strong animate-card-place"
+              class="px-3 py-2 border-2 rounded-lg glass-strong animate-card-place"
               :class="`border-player-${winner?.color}`"
               :style="{ animationDelay: `${index * 100}ms` }"
             >
               <div class="text-center">
-                <div class="text-sm text-white/60">({{ pos.x }},{{ pos.y }})</div>
+                <div class="text-xs text-white/50 mb-0.5">Grid</div>
+                <div class="text-sm font-bold text-white">({{ pos.x }}, {{ pos.y }})</div>
               </div>
             </div>
+          </div>
+          <div class="mt-3 text-xs text-center text-white/60">
+            {{ winType === 'horizontal' ? '← Left to Right →' : 
+               winType === 'vertical' ? '↑ Top to Bottom ↓' : 
+               winType === 'diagonal' ? '↖ Diagonal ↘' : '' }}
           </div>
         </div>
 
