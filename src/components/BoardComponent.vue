@@ -1,6 +1,6 @@
 <template>
-  <div class="board-container">
-    <div class="board-grid">
+  <div class="board-container" @click.self="emit('backgroundClick')">
+    <div class="board-grid" @click.self="emit('backgroundClick')">
       <!-- Board cells -->
       <div v-for="(row, y) in board" :key="`row-${y}`" class="board-row">
         <div
@@ -12,7 +12,8 @@
             'cell-valid': cell.isValid,
             'cell-has-card': cell.card !== null,
             'cell-drag-over': isDragOver && dragOverCell?.x === x && dragOverCell?.y === y,
-            'cell-clickable': selectedCard && !cell.card,
+            'cell-clickable': selectedCard && cell.isValid,
+            'cell-not-valid': selectedCard && !cell.isValid,
             'cell-selected': selectedCell && selectedCell.x === x && selectedCell.y === y,
           }"
           @click="handleCellClick(cell.position)"
@@ -47,7 +48,7 @@ interface Props {
   selectedCell?: Position | null
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showCoordinates: false,
   selectedCard: null,
   selectedCell: null,
@@ -56,6 +57,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   cellClick: [position: Position]
   cardDrop: [card: Card, position: Position]
+  backgroundClick: []
 }>()
 
 const isDragOver = ref(false)
@@ -153,7 +155,8 @@ function handleDrop(event: DragEvent, position: Position) {
 }
 
 .cell-valid {
-  border-color: rgba(74, 222, 128, 0.5);
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
   animation: pulse-border 2s infinite;
 }
 
@@ -162,10 +165,10 @@ function handleDrop(event: DragEvent, position: Position) {
 }
 
 .cell-drag-over {
-  background: rgba(74, 222, 128, 0.3);
-  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.6);
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
 }
 
 .cell-clickable {
@@ -176,6 +179,16 @@ function handleDrop(event: DragEvent, position: Position) {
   background: rgba(250, 204, 21, 0.2);
   border-color: #facc15;
   box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
+}
+
+.cell-not-valid {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cell-not-valid:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: none;
 }
 
 .cell-selected {
@@ -239,21 +252,23 @@ function handleDrop(event: DragEvent, position: Position) {
 /* Valid move indicator */
 .valid-indicator {
   position: absolute;
-  width: 35%;
-  height: 35%;
-  background: rgba(34, 197, 94, 0.3);
-  border: 2px solid rgb(34, 197, 94);
+  width: 30%;
+  height: 30%;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1.5px solid rgba(34, 197, 94, 0.5);
   border-radius: 50%;
-  animation: pulse-indicator 1.5s ease-in-out infinite;
+  animation: pulse-indicator 2s ease-in-out infinite;
 }
 
 @keyframes pulse-border {
   0%,
   100% {
-    border-color: rgba(34, 197, 94, 0.3);
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.05);
   }
   50% {
-    border-color: rgba(34, 197, 94, 0.6);
+    border-color: rgba(74, 222, 128, 0.5);
+    background: rgba(74, 222, 128, 0.12);
   }
 }
 
@@ -261,11 +276,11 @@ function handleDrop(event: DragEvent, position: Position) {
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.6;
+    opacity: 0.5;
   }
   50% {
-    transform: scale(1.2);
-    opacity: 1;
+    transform: scale(1.15);
+    opacity: 0.8;
   }
 }
 

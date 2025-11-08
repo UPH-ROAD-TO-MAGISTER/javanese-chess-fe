@@ -7,6 +7,7 @@
         : '',
       disabled ? 'opacity-60' : '',
     ]"
+    @click.self="emit('backgroundClick')"
   >
     <!-- Turn Indicator -->
     <div
@@ -27,6 +28,7 @@
       v-if="cards.length > 0"
       class="grid gap-2 md:flex md:flex-wrap md:gap-4"
       :style="{ gridTemplateColumns: `repeat(${cards.length}, minmax(0, 1fr))` }"
+      @click.self="emit('backgroundClick')"
     >
       <div
         v-for="card in cards"
@@ -45,6 +47,9 @@
             : '',
           highlightedCards && highlightedCards.includes(card.id)
             ? 'ring-4 ring-blue-500 ring-offset-2 ring-offset-transparent scale-105 !bg-blue-500/30 !border-blue-400 shadow-2xl shadow-blue-500/50 brightness-125 card-pulse'
+            : '',
+          highlightedCards && highlightedCards.length > 0 && !highlightedCards.includes(card.id)
+            ? 'opacity-40'
             : '',
           isPlayerTurn && !disabled ? 'hover:shadow-green-400/50 card-glow' : '',
         ]"
@@ -113,6 +118,7 @@ const emit = defineEmits<{
   cardClick: [card: Card]
   cardDragStart: [card: Card]
   cardDragEnd: []
+  backgroundClick: []
 }>()
 
 function handleCardClick(card: Card) {
