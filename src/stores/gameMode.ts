@@ -38,6 +38,6 @@ export const useGameModeStore = defineStore('gameMode', () => {
     setMode,
     loadMode,
     isDemoMode,
-    isApiMode
+    isApiMode,
   }
 })

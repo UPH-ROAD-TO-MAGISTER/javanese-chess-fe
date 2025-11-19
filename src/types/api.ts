@@ -57,9 +57,25 @@ export interface TurnOrderPlayer {
 export interface PlayGameRequest {
   number_bot: number
   number_player: number
-  player_name: string
+  player_name: string[] // Array of player names for multiplayer
   room_id: string
   weights: BackendWeights
+}
+
+// Join Room Request
+export interface JoinRoomRequest {
+  room_code: string
+  player_name: string
+}
+
+// Join Room Response
+export interface JoinRoomResponse {
+  success: boolean
+  data: {
+    room_code: string
+    player_id: string
+    status: 'lobby' | 'playing' | 'finished'
+  }
 }
 
 // Play Game Response
@@ -75,6 +91,14 @@ export interface PlayGameResponse {
 }
 
 // WebSocket Actions (Messages sent TO backend)
+export interface WSRoomCreated {
+  action: 'room_created'
+  data: {
+    room_code: string
+    player_name: string
+  }
+}
+
 export interface WSHumanMove {
   action: 'human_move'
   data: {
@@ -92,9 +116,38 @@ export interface WSBotMove {
   }
 }
 
-export type WSMessage = WSHumanMove | WSBotMove
+export type WSMessage = WSRoomCreated | WSHumanMove | WSBotMove
 
 // WebSocket Events (Messages received FROM backend)
+
+// Room created confirmation
+export interface WSRoomCreatedResponse {
+  action: 'room_created'
+  data: {
+    room_code: string
+    status: 'lobby'
+  }
+}
+
+// New player joined notification
+export interface WSNewPlayerJoinedResponse {
+  action: 'new_player_joined'
+  data: {
+    player_name: string
+  }
+}
+
+// Game started broadcast
+export interface WSGameStartedResponse {
+  action: 'game_started'
+  data: {
+    board: BackendBoard
+    players: TurnOrderPlayer[]
+    room_code: string
+    status: 'playing'
+    turn_order: string[]
+  }
+}
 
 // Main event: state-updated - sent after every move (human or bot)
 export interface WSStateUpdatedResponse {
@@ -138,4 +191,10 @@ export interface WSErrorResponse {
   }
 }
 
-export type WSEvent = WSStateUpdatedResponse | WSGameEndResponse | WSErrorResponse
+export type WSEvent =
+  | WSRoomCreatedResponse
+  | WSNewPlayerJoinedResponse
+  | WSGameStartedResponse
+  | WSStateUpdatedResponse
+  | WSGameEndResponse
+  | WSErrorResponse

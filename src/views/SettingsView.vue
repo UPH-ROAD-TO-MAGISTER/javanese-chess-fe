@@ -20,7 +20,11 @@
               <div>
                 <p class="font-medium text-white">Current Mode</p>
                 <p class="text-sm text-white/60">
-                  {{ gameModeStore.mode === 'demo' ? 'Demo Mode (Local)' : 'API Mode (Backend Connected)' }}
+                  {{
+                    gameModeStore.mode === 'demo'
+                      ? 'Demo Mode (Local)'
+                      : 'API Mode (Backend Connected)'
+                  }}
                 </p>
               </div>
               <button

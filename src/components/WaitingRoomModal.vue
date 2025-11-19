@@ -3,7 +3,13 @@
     <div class="relative z-10 w-full max-w-2xl p-8 glass-card rounded-2xl animate-slide-in">
       <div class="mb-8 text-center">
         <h2 class="mb-3 text-3xl font-bold text-white">Waiting Room</h2>
-        <p class="text-sm text-white/70">Waiting for players to join...</p>
+        <p class="text-sm text-white/70">
+          {{
+            isRoomMaster
+              ? 'Waiting for players to join...'
+              : 'Waiting for host to start the game...'
+          }}
+        </p>
       </div>
 
       <!-- Room Code -->
@@ -75,7 +81,7 @@
                         ? slot.player?.name
                         : slot.type === 'bot'
                           ? `Bot ${index + 1}`
-                          : getWaitingSlotLabel(index)
+                          : getWaitingSlotLabel()
                     }}
                   </span>
                   <span
@@ -97,7 +103,7 @@
                       ? 'Ready'
                       : slot.type === 'bot'
                         ? 'AI Player'
-                        : getWaitingSlotDescription(index)
+                        : getWaitingSlotDescription()
                   }}
                 </p>
               </div>
@@ -126,8 +132,8 @@
         </div>
       </div>
 
-      <!-- Player Count -->
-      <div class="p-4 mb-6 rounded-lg glass-strong">
+      <!-- Player Count - Only show for room master -->
+      <div v-if="isRoomMaster" class="p-4 mb-6 rounded-lg glass-strong">
         <div class="flex items-center justify-between">
           <span class="text-sm text-white/70">Players Ready:</span>
           <span class="text-lg font-bold text-white">{{ playersReady }} / {{ totalSlots }}</span>
@@ -171,14 +177,6 @@
           </span>
         </div>
       </div>
-
-      <!-- Leave Room Button -->
-      <button
-        @click="leaveRoom"
-        class="w-full px-4 py-2 mt-4 text-sm font-semibold transition-all rounded-lg glass-light hover:bg-white/10 text-white/70 hover:text-white"
-      >
-        Leave Room
-      </button>
     </div>
   </div>
 </template>
@@ -199,7 +197,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   start: []
   convertToBot: [slotIndex: number]
-  leave: []
 }>()
 
 const copied = ref(false)
@@ -211,11 +208,11 @@ const playersReady = computed(() => {
 })
 
 // Helper to determine label for waiting slots
-function getWaitingSlotLabel(_index: number): string {
+function getWaitingSlotLabel(): string {
   return 'Waiting for Player...'
 }
 
-function getWaitingSlotDescription(_index: number): string {
+function getWaitingSlotDescription(): string {
   return 'Can be filled by human or converted to bot'
 }
 
@@ -239,10 +236,6 @@ function startGame() {
   if (playersReady.value >= 2) {
     emit('start')
   }
-}
-
-function leaveRoom() {
-  emit('leave')
 }
 </script>
 

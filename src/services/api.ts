@@ -6,7 +6,9 @@ import type {
   DefaultHeuristicResponse,
   PlayGameRequest,
   PlayGameResponse,
-  BackendWeights
+  JoinRoomRequest,
+  JoinRoomResponse,
+  BackendWeights,
 } from '@/types/api'
 import type { HeuristicWeights } from '@/types/game'
 
@@ -33,7 +35,7 @@ export function convertToBackendWeights(frontend: HeuristicWeights): BackendWeig
       '6': frontend.threatCardValue6,
       '7': frontend.threatCardValue7,
       '8': frontend.threatCardValue8,
-      '9': frontend.threatCardValue9
+      '9': frontend.threatCardValue9,
     },
     replace_values_potential: {
       '1': frontend.potentialThreatCardValue1,
@@ -44,7 +46,7 @@ export function convertToBackendWeights(frontend: HeuristicWeights): BackendWeig
       '6': frontend.potentialThreatCardValue6,
       '7': frontend.potentialThreatCardValue7,
       '8': frontend.potentialThreatCardValue8,
-      '9': frontend.potentialThreatCardValue9
+      '9': frontend.potentialThreatCardValue9,
     },
     replace_when_threat: frontend.overwriteThreat,
     replace_potential: frontend.overwritePotentialThreat,
@@ -55,7 +57,7 @@ export function convertToBackendWeights(frontend: HeuristicWeights): BackendWeig
     build_alignment_2: frontend.create2InRow,
     build_alignment_3: frontend.create3InRow,
     play_smallest_card: frontend.playSmallestCard,
-    keep_near_card: frontend.placeNearOwnCard
+    keep_near_card: frontend.placeNearOwnCard,
   }
 }
 
@@ -95,7 +97,7 @@ export function convertToFrontendWeights(backend: BackendWeights): HeuristicWeig
     create2InRow: backend.build_alignment_2,
     create3InRow: backend.build_alignment_3,
     playSmallestCard: backend.play_smallest_card,
-    placeNearOwnCard: backend.keep_near_card
+    placeNearOwnCard: backend.keep_near_card,
   }
 }
 
@@ -129,8 +131,8 @@ export const apiService = {
       const response = await fetch(`${API_BASE_URL}/api/config/weights/room?roomCode=${roomCode}`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       })
 
       if (!response.ok) {
@@ -138,7 +140,7 @@ export const apiService = {
       }
 
       const data = await response.json()
-      
+
       // Convert backend weights to frontend format
       return convertToFrontendWeights(data.weights)
     } catch (error) {
@@ -148,10 +150,45 @@ export const apiService = {
   },
 
   /**
+   * Join an existing room
+   */
+  async joinRoom(roomCode: string, playerName: string): Promise<JoinRoomResponse> {
+    try {
+      const payload: JoinRoomRequest = {
+        room_code: roomCode,
+        player_name: playerName,
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: JoinRoomResponse = await response.json()
+
+      if (!data.success) {
+        throw new Error('Failed to join room')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Failed to join room:', error)
+      throw error
+    }
+  },
+
+  /**
    * Start a new game (create room and initialize)
    */
   async startGame(config: {
-    playerName: string
+    playerNames: string[] // Array of all player names from lobby
     roomId: string
     numberOfBots: number
     numberOfPlayers: number
@@ -161,17 +198,17 @@ export const apiService = {
       const payload: PlayGameRequest = {
         number_bot: config.numberOfBots,
         number_player: config.numberOfPlayers,
-        player_name: config.playerName,
+        player_name: config.playerNames, // Send array: ['rama', 'ateng']
         room_id: config.roomId,
-        weights: convertToBackendWeights(config.heuristicWeights)
+        weights: convertToBackendWeights(config.heuristicWeights),
       }
 
       const response = await fetch(`${API_BASE_URL}/api/play`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -189,5 +226,5 @@ export const apiService = {
       console.error('Failed to start game:', error)
       throw error
     }
-  }
+  },
 }

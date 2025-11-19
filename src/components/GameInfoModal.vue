@@ -82,7 +82,9 @@
           </div>
 
           <!-- Win Move -->
-          <div class="flex items-center justify-between p-3 glass rounded-lg border border-yellow-500/30">
+          <div
+            class="flex items-center justify-between p-3 glass rounded-lg border border-yellow-500/30"
+          >
             <div>
               <div class="text-white font-medium text-sm">🏆 Winning Move (4 Aligned)</div>
               <div class="text-white/60 text-xs mt-0.5">Highest priority - complete 4-in-a-row</div>
@@ -112,7 +114,10 @@
           <div class="flex items-center justify-between p-3 glass rounded-lg">
             <div>
               <div class="text-white font-medium text-sm">Threat Card Values</div>
-              <div class="text-white/60 text-xs mt-0.5">Cards 1-9: {{ displayWeights.threatCardValue1 }} to {{ displayWeights.threatCardValue9 }}</div>
+              <div class="text-white/60 text-xs mt-0.5">
+                Cards 1-9: {{ displayWeights.threatCardValue1 }} to
+                {{ displayWeights.threatCardValue9 }}
+              </div>
             </div>
             <div class="text-white font-mono font-bold text-xs">
               1:{{ displayWeights.threatCardValue1 }} ... 9:{{ displayWeights.threatCardValue9 }}
@@ -179,10 +184,15 @@
           <div class="flex items-center justify-between p-3 glass rounded-lg">
             <div>
               <div class="text-white font-medium text-sm">Potential Card Values</div>
-              <div class="text-white/60 text-xs mt-0.5">Cards 1-9: {{ displayWeights.potentialThreatCardValue1 }} to {{ displayWeights.potentialThreatCardValue9 }} (inverted)</div>
+              <div class="text-white/60 text-xs mt-0.5">
+                Cards 1-9: {{ displayWeights.potentialThreatCardValue1 }} to
+                {{ displayWeights.potentialThreatCardValue9 }} (inverted)
+              </div>
             </div>
             <div class="text-white font-mono font-bold text-xs">
-              1:{{ displayWeights.potentialThreatCardValue1 }} ... 9:{{ displayWeights.potentialThreatCardValue9 }}
+              1:{{ displayWeights.potentialThreatCardValue1 }} ... 9:{{
+                displayWeights.potentialThreatCardValue9
+              }}
             </div>
           </div>
 
@@ -301,29 +311,32 @@ const isLoading = ref(false)
 const loadError = ref('')
 
 // Watch for modal opening and fetch weights if in API mode
-watch(() => props.show, async (isShown) => {
-  if (isShown && gameModeStore.isApiMode()) {
-    // Fetch weights from API
-    isLoading.value = true
-    loadError.value = ''
-    
-    try {
-      const weights = await apiService.getRoomWeights(props.roomCode)
-      displayWeights.value = weights
-      console.log('Loaded room weights from API:', weights)
-    } catch (error) {
-      console.error('Failed to load room weights:', error)
-      loadError.value = 'Failed to load room configuration from server'
-      // Fallback to passed weights
+watch(
+  () => props.show,
+  async (isShown) => {
+    if (isShown && gameModeStore.isApiMode()) {
+      // Fetch weights from API
+      isLoading.value = true
+      loadError.value = ''
+
+      try {
+        const weights = await apiService.getRoomWeights(props.roomCode)
+        displayWeights.value = weights
+        console.log('Loaded room weights from API:', weights)
+      } catch (error) {
+        console.error('Failed to load room weights:', error)
+        loadError.value = 'Failed to load room configuration from server'
+        // Fallback to passed weights
+        displayWeights.value = props.heuristicWeights
+      } finally {
+        isLoading.value = false
+      }
+    } else {
+      // Demo mode - use passed weights
       displayWeights.value = props.heuristicWeights
-    } finally {
-      isLoading.value = false
     }
-  } else {
-    // Demo mode - use passed weights
-    displayWeights.value = props.heuristicWeights
-  }
-})
+  },
+)
 
 function closeModal() {
   emit('close')

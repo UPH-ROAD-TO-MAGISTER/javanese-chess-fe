@@ -149,11 +149,15 @@
                 <div v-for="i in 9" :key="`threat-${i}`">
                   <div class="flex justify-between items-center mb-1">
                     <label class="text-white text-xs">Card {{ i }}</label>
-                    <span class="text-white/70 text-xs font-mono">{{ localWeights[`threatCardValue${i}` as keyof typeof localWeights] }}</span>
+                    <span class="text-white/70 text-xs font-mono">{{
+                      localWeights[`threatCardValue${i}` as keyof typeof localWeights]
+                    }}</span>
                   </div>
                   <input
                     type="range"
-                    v-model.number="localWeights[`threatCardValue${i}` as keyof typeof localWeights]"
+                    v-model.number="
+                      localWeights[`threatCardValue${i}` as keyof typeof localWeights]
+                    "
                     min="0"
                     max="200"
                     step="5"
@@ -190,7 +194,9 @@
             <div>
               <div class="flex justify-between items-center mb-2">
                 <label class="text-white text-sm">Overwrite Potential Threat</label>
-                <span class="text-white font-mono">{{ localWeights.overwritePotentialThreat }}</span>
+                <span class="text-white font-mono">{{
+                  localWeights.overwritePotentialThreat
+                }}</span>
               </div>
               <input
                 type="range"
@@ -224,11 +230,15 @@
                 <div v-for="i in 9" :key="`potential-${i}`">
                   <div class="flex justify-between items-center mb-1">
                     <label class="text-white text-xs">Card {{ i }}</label>
-                    <span class="text-white/70 text-xs font-mono">{{ localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights] }}</span>
+                    <span class="text-white/70 text-xs font-mono">{{
+                      localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights]
+                    }}</span>
                   </div>
                   <input
                     type="range"
-                    v-model.number="localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights]"
+                    v-model.number="
+                      localWeights[`potentialThreatCardValue${i}` as keyof typeof localWeights]
+                    "
                     min="0"
                     max="200"
                     step="5"
@@ -361,7 +371,7 @@ watch(
   (newWeights) => {
     localWeights.value = { ...newWeights }
   },
-  { deep: true }
+  { deep: true },
 )
 
 const defaultWeights: HeuristicWeights = {

@@ -457,6 +457,7 @@ const joinError = ref('')
 const nameInputJoin = ref<HTMLInputElement>()
 const isCreatingRoom = ref(false)
 const creatingError = ref('')
+const isJoiningRoom = ref(false)
 
 // Focus input when join dialog opens
 watch(showJoinDialog, (newVal) => {
@@ -502,8 +503,8 @@ async function handleCreateRoom(config: {
       JSON.stringify({
         humanPlayers: config.humanPlayers,
         bots: config.bots,
-        heuristicWeights: config.heuristicWeights
-      })
+        heuristicWeights: config.heuristicWeights,
+      }),
     )
 
     if (gameModeStore.isApiMode()) {
@@ -522,7 +523,10 @@ async function handleCreateRoom(config: {
     router.push(`/room/${generatedRoomCode}`)
   } catch (error) {
     console.error('Failed to create room:', error)
-    creatingError.value = error instanceof Error ? error.message : 'Failed to create room. Please check your connection and try again.'
+    creatingError.value =
+      error instanceof Error
+        ? error.message
+        : 'Failed to create room. Please check your connection and try again.'
   } finally {
     isCreatingRoom.value = false
   }
@@ -534,7 +538,7 @@ function handleJoinEnter() {
   }
 }
 
-function joinRoom() {
+async function joinRoom() {
   const name = playerName.value.trim()
   const code = roomCode.value.trim()
 
@@ -553,18 +557,42 @@ function joinRoom() {
     return
   }
 
-  // Generate unique player ID for joiner
-  const playerId = generatePlayerId()
+  if (gameModeStore.isApiMode()) {
+    // API MODE: Just save to localStorage and navigate
+    // RoomView.vue will handle the actual API call and WebSocket connection
+    isJoiningRoom.value = true
+    joinError.value = ''
 
-  // Save player info to localStorage
-  localStorage.setItem('playerName', name)
-  localStorage.setItem('playerId', playerId)
-  localStorage.setItem('roomCode', code.toUpperCase())
-  localStorage.setItem('isRoomMaster', 'false')
+    try {
+      // Save player info to localStorage
+      localStorage.setItem('playerName', name)
+      localStorage.setItem('roomCode', code.toUpperCase())
+      localStorage.setItem('isRoomMaster', 'false')
+      localStorage.setItem('gameMode', 'api')
 
-  // Demo mode: directly go to game room
-  showJoinDialog.value = false
-  router.push(`/room/${code.toUpperCase()}`)
+      // Close modal and navigate to waiting room
+      // RoomView will call apiGameStore.joinLobby() which handles API + WebSocket
+      showJoinDialog.value = false
+      router.push(`/room/${code.toUpperCase()}`)
+    } catch (error) {
+      console.error('Failed to navigate to room:', error)
+      joinError.value = 'Failed to join room. Please try again.'
+    } finally {
+      isJoiningRoom.value = false
+    }
+  } else {
+    // DEMO MODE: Just navigate (old behavior)
+    const playerId = generatePlayerId()
+
+    localStorage.setItem('playerName', name)
+    localStorage.setItem('playerId', playerId)
+    localStorage.setItem('roomCode', code.toUpperCase())
+    localStorage.setItem('isRoomMaster', 'false')
+    localStorage.setItem('gameMode', 'demo')
+
+    showJoinDialog.value = false
+    router.push(`/room/${code.toUpperCase()}`)
+  }
 }
 
 function goToSettings() {

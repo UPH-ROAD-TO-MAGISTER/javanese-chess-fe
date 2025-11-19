@@ -58,9 +58,15 @@
             </div>
           </div>
           <div class="mt-3 text-xs text-center text-white/60">
-            {{ winType === 'horizontal' ? '← Left to Right →' : 
-               winType === 'vertical' ? '↑ Top to Bottom ↓' : 
-               winType === 'diagonal' ? '↖ Diagonal ↘' : '' }}
+            {{
+              winType === 'horizontal'
+                ? '← Left to Right →'
+                : winType === 'vertical'
+                  ? '↑ Top to Bottom ↓'
+                  : winType === 'diagonal'
+                    ? '↖ Diagonal ↘'
+                    : ''
+            }}
           </div>
         </div>
 

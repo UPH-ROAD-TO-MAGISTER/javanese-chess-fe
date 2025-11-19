@@ -9,7 +9,6 @@
       :current-player-id="currentPlayerId"
       @start="handleStartGame"
       @convert-to-bot="handleConvertToBot"
-      @leave="handleLeaveWaitingRoom"
     />
 
     <!-- First Turn Modal - Only for Demo Mode -->
@@ -25,8 +24,14 @@
     <WinDialog
       :is-visible="showWinDialog || showApiWinDialog"
       :winner="(gameModeStore.isApiMode() ? apiGameStore.winner : gameStore.winner) as any"
-      :win-type="(gameModeStore.isApiMode() ? apiGameStore.winType : gameStore.winCondition?.winType) as any"
-      :winning-cards="gameModeStore.isApiMode() ? apiGameStore.winningPositions : (gameStore.winCondition?.winningCards || [])"
+      :win-type="
+        (gameModeStore.isApiMode() ? apiGameStore.winType : gameStore.winCondition?.winType) as any
+      "
+      :winning-cards="
+        gameModeStore.isApiMode()
+          ? apiGameStore.winningPositions
+          : gameStore.winCondition?.winningCards || []
+      "
       @close="handleCloseWinDialog"
       @play-again="handlePlayAgain"
     />
@@ -40,7 +45,9 @@
           @click="showFirstPlayerNotification = false"
         >
           <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-          <div class="relative glass-strong rounded-2xl p-8 max-w-md w-full shadow-2xl animate-slide-in">
+          <div
+            class="relative glass-strong rounded-2xl p-8 max-w-md w-full shadow-2xl animate-slide-in"
+          >
             <div class="text-center">
               <div class="text-5xl mb-4">🎮</div>
               <h2 class="text-2xl font-black text-white mb-2">Game Started!</h2>
@@ -104,12 +111,7 @@
     />
 
     <!-- Error Modal -->
-    <ErrorModal
-      :show="!!apiError"
-      :message="apiError"
-      is-error
-      @close="apiError = ''"
-    />
+    <ErrorModal :show="!!apiError" :message="apiError" is-error @close="apiError = ''" />
 
     <!-- Last Move Notification (API Mode) -->
     <Teleport to="body">
@@ -129,13 +131,14 @@
                   <span class="text-white/70 text-sm">played</span>
                   <div
                     class="w-8 h-8 rounded flex items-center justify-center font-bold text-sm"
-                    :class="`bg-player-${apiGameStore.turnOrder.find(p => p.id === apiGameStore.lastMove?.playerId)?.color || 'blue'}`"
+                    :class="`bg-player-${apiGameStore.turnOrder.find((p) => p.id === apiGameStore.lastMove?.playerId)?.color || 'blue'}`"
                   >
                     {{ apiGameStore.lastMove.card }}
                   </div>
                 </div>
                 <div v-if="apiGameStore.lastMove.wasReplacement" class="text-sm text-yellow-400">
-                  ⚡ Replaced card {{ apiGameStore.lastMove.replacedValue }} with {{ apiGameStore.lastMove.card }}
+                  ⚡ Replaced card {{ apiGameStore.lastMove.replacedValue }} with
+                  {{ apiGameStore.lastMove.card }}
                 </div>
                 <div v-else class="text-sm text-green-400">
                   ✨ Placed at ({{ apiGameStore.lastMove.x }}, {{ apiGameStore.lastMove.y }})
@@ -226,7 +229,9 @@
             <div class="p-4 glass-card">
               <h3 class="mb-3 text-base font-bold text-white">Current Turn</h3>
               <div
-                v-if="gameModeStore.isApiMode() ? apiGameStore.currentPlayer : gameStore.currentPlayer"
+                v-if="
+                  gameModeStore.isApiMode() ? apiGameStore.currentPlayer : gameStore.currentPlayer
+                "
                 class="flex items-center gap-3 p-3 rounded-lg glass-light"
               >
                 <div
@@ -234,7 +239,11 @@
                   :class="`bg-player-${gameModeStore.isApiMode() ? apiGameStore.currentPlayer?.color : gameStore.currentPlayer?.color}`"
                 ></div>
                 <span class="text-base font-semibold text-white">
-                  {{ gameModeStore.isApiMode() ? apiGameStore.currentPlayer?.name : gameStore.currentPlayer?.name }}
+                  {{
+                    gameModeStore.isApiMode()
+                      ? apiGameStore.currentPlayer?.name
+                      : gameStore.currentPlayer?.name
+                  }}
                 </span>
               </div>
               <div v-else class="py-3 text-sm text-center text-white/70">No player turn yet</div>
@@ -243,9 +252,12 @@
             <!-- Players Grid -->
             <div class="p-4 glass-card">
               <h3 class="mb-3 text-base font-bold text-white">Players</h3>
-              
+
               <!-- API Mode Players -->
-              <div v-if="gameModeStore.isApiMode() && apiGameStore.turnOrder.length > 0" class="grid grid-cols-2 gap-2">
+              <div
+                v-if="gameModeStore.isApiMode() && apiGameStore.turnOrder.length > 0"
+                class="grid grid-cols-2 gap-2"
+              >
                 <div
                   v-for="player in apiGameStore.turnOrder"
                   :key="player.id"
@@ -271,9 +283,12 @@
                   </div>
                 </div>
               </div>
-              
+
               <!-- Demo Mode Players -->
-              <div v-else-if="!gameModeStore.isApiMode() && gameStore.players.length > 0" class="grid grid-cols-2 gap-2">
+              <div
+                v-else-if="!gameModeStore.isApiMode() && gameStore.players.length > 0"
+                class="grid grid-cols-2 gap-2"
+              >
                 <div
                   v-for="player in gameStore.players"
                   :key="player.id"
@@ -299,7 +314,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div v-else class="py-3 text-sm text-center text-white/70">No players yet</div>
             </div>
 
@@ -414,7 +429,7 @@ const currentPlayerCards = computed((): Card[] => {
       id: `card-${apiGameStore.myPlayerId}-${cardValue}-${index}`,
       value: cardValue as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
       color: (apiGameStore.myPlayer?.color || 'blue') as PlayerColor,
-      playerId: apiGameStore.myPlayerId
+      playerId: apiGameStore.myPlayerId,
     }))
   } else {
     // DEMO MODE: Use gameStore
@@ -430,14 +445,18 @@ const displayBoard = computed(() => {
     return apiGameStore.board.map((row, y) =>
       row.map((cell, x) => ({
         position: { x, y },
-        card: cell.value > 0 ? {
-          id: `card-${cell.ownerId}-${cell.value}-${x}-${y}`,
-          value: cell.value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
-          color: (apiGameStore.turnOrder.find(p => p.id === cell.ownerId)?.color || 'blue') as PlayerColor,
-          playerId: cell.ownerId
-        } : null,
-        isValid: false
-      }))
+        card:
+          cell.value > 0
+            ? {
+                id: `card-${cell.ownerId}-${cell.value}-${x}-${y}`,
+                value: cell.value as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
+                color: (apiGameStore.turnOrder.find((p) => p.id === cell.ownerId)?.color ||
+                  'blue') as PlayerColor,
+                playerId: cell.ownerId,
+              }
+            : null,
+        isValid: false,
+      })),
     )
   } else {
     // DEMO MODE: Use gameStore board directly
@@ -448,13 +467,13 @@ const displayBoard = computed(() => {
 // Calculate remaining deck cards for each player (API Mode only)
 const getRemainingDeck = (playerId: string): number => {
   if (!gameModeStore.isApiMode()) return 0
-  
-  const player = apiGameStore.turnOrder.find(p => p.id === playerId)
+
+  const player = apiGameStore.turnOrder.find((p) => p.id === playerId)
   if (!player) return 0
-  
+
   // Count cards on board for this player
-  const cardsOnBoard = apiGameStore.board.flat().filter(cell => cell.ownerId === playerId).length
-  
+  const cardsOnBoard = apiGameStore.board.flat().filter((cell) => cell.ownerId === playerId).length
+
   // Total cards = 18, Remaining = 18 - hand - deployed
   return 18 - player.hand.length - cardsOnBoard
 }
@@ -466,7 +485,9 @@ const isPlayerTurn = computed(() => {
     return apiGameStore.isMyTurn && apiGameStore.gameStatus !== 'finished'
   } else {
     // DEMO MODE: Check if current player is not a bot AND game is not finished
-    return gameStore.currentPlayer && !gameStore.currentPlayer.isBot && gameStore.status !== 'finished'
+    return (
+      gameStore.currentPlayer && !gameStore.currentPlayer.isBot && gameStore.status !== 'finished'
+    )
   }
 })
 
@@ -513,6 +534,114 @@ watch(
   },
 )
 
+// Watch for game status change to 'playing' (for guests when game_started event received)
+watch(
+  () => apiGameStore.gameStatus,
+  (status, oldStatus) => {
+    if (!gameModeStore.isApiMode()) return
+
+    console.log('🔍 Game status changed:', { old: oldStatus, new: status })
+
+    // When game status is 'playing' and waiting room is still open
+    if (status === 'playing' && showWaitingRoom.value) {
+      console.log('🎮 Game started! Transitioning from waiting room to game...')
+
+      // Close waiting room
+      showWaitingRoom.value = false
+
+      // ✅ No need to reconnect! WebSocket already connected with room_code
+      // Just show first player notification
+      const firstPlayer = apiGameStore.currentPlayer
+      if (firstPlayer) {
+        firstPlayerName.value = firstPlayer.name
+        showFirstPlayerNotification.value = true
+
+        // Auto-trigger bot if it's bot's turn
+        if (firstPlayer.isBot) {
+          setTimeout(() => {
+            console.log('Triggering first bot move...')
+            wsService.sendBotMove(apiGameStore.roomCode)
+          }, 1500)
+        }
+      }
+    }
+  },
+)
+
+// Watch for lobby players changes (when new players join)
+watch(
+  () => apiGameStore.lobbyPlayers,
+  (newLobbyPlayers) => {
+    if (!gameModeStore.isApiMode() || !showWaitingRoom.value || !roomConfig.value) return
+
+    console.log('👥 Lobby players updated:', newLobbyPlayers)
+
+    // Update room slots with new players
+    const colors: PlayerColor[] = [
+      PlayerColor.GREEN,
+      PlayerColor.RED,
+      PlayerColor.BLUE,
+      PlayerColor.PURPLE,
+    ]
+    const slots: RoomSlot[] = []
+
+    // Add all lobby players as player slots
+    newLobbyPlayers.forEach((playerName, index) => {
+      const isMe = playerName === localStorage.getItem('playerName')
+      slots.push({
+        id: `slot-${index}`,
+        type: 'player',
+        player: {
+          id: isMe ? currentPlayerId.value : `player-${index}`,
+          name: playerName,
+          color: colors[index] || PlayerColor.BLUE,
+          isBot: false,
+          cardsInHand: [],
+          cardsInDeck: [],
+          totalCards: 18,
+          score: 0,
+        },
+        color: colors[index] || PlayerColor.BLUE,
+      })
+    })
+
+    // Add bots
+    for (let i = 0; i < roomConfig.value.bots; i++) {
+      const slotIndex = slots.length
+      slots.push({
+        id: `slot-${slotIndex}`,
+        type: 'bot',
+        player: {
+          id: generateBotId(),
+          name: `Bot ${i + 1}`,
+          color: colors[slotIndex] || PlayerColor.BLUE,
+          isBot: true,
+          cardsInHand: [],
+          cardsInDeck: [],
+          totalCards: 18,
+          score: 0,
+        },
+        color: colors[slotIndex] || PlayerColor.BLUE,
+      })
+    }
+
+    // Add waiting slots for remaining human players
+    const remainingHumanSlots = roomConfig.value.humanPlayers - newLobbyPlayers.length
+    for (let i = 0; i < remainingHumanSlots; i++) {
+      const slotIndex = slots.length
+      slots.push({
+        id: `slot-${slotIndex}`,
+        type: 'waiting',
+        color: colors[slotIndex] || PlayerColor.PURPLE,
+      })
+    }
+
+    gameStore.setRoomSlots(slots)
+    console.log('✅ Room slots updated:', slots)
+  },
+  { deep: true },
+)
+
 onMounted(async () => {
   if (!code.value) {
     router.push('/')
@@ -527,14 +656,17 @@ onMounted(async () => {
     return
   }
 
-  // Load player ID
+  // Load player ID (optional for API mode, will be set after joining)
   const playerId = localStorage.getItem('playerId')
-  if (!playerId) {
+  if (!playerId && !gameModeStore.isApiMode()) {
+    // Only check playerId for demo mode
     alert('Invalid player session')
     router.push('/')
     return
   }
-  currentPlayerId.value = playerId
+  if (playerId) {
+    currentPlayerId.value = playerId
+  }
 
   // Check if room master
   isRoomMaster.value = localStorage.getItem('isRoomMaster') === 'true'
@@ -548,36 +680,36 @@ onMounted(async () => {
   if (gameModeStore.isApiMode()) {
     // ✅ API MODE: Check if we can restore from saved state (after refresh)
     console.log('API Mode: Checking for saved state...')
-    
+
     const hasRestoredState = apiGameStore.restoreStateFromStorage()
-    
+
     if (hasRestoredState && apiGameStore.roomCode === code.value) {
       // State restored successfully - reconnect WebSocket
       console.log('Game state restored from localStorage')
-      
+
       try {
         await apiGameStore.reconnectWebSocket()
         console.log('WebSocket reconnected successfully')
-        
+
         // Don't show waiting room, game is already in progress
         showWaitingRoom.value = false
-        
+
         // Show first player notification if it's the first turn
         if (apiGameStore.currentTurnIndex === 0 && apiGameStore.currentPlayer) {
           firstPlayerName.value = apiGameStore.currentPlayer.name
           showFirstPlayerNotification.value = true
         }
-        
+
         return // Skip normal initialization
       } catch (error) {
         console.error('Failed to reconnect WebSocket, will need to restart game:', error)
         // Continue to normal flow (show waiting room)
       }
     }
-    
+
     // Normal flow: Show waiting room for new game
     console.log('API Mode: Loading waiting room...')
-    
+
     // Load room config
     if (isRoomMaster.value) {
       const savedConfig = localStorage.getItem('roomConfig')
@@ -590,7 +722,7 @@ onMounted(async () => {
           humanPlayers: config.humanPlayers,
           bots: config.bots,
           waitingSlots: 4 - config.humanPlayers - config.bots,
-          roomMaster: playerId,
+          roomMaster: playerId || playerName, // Use playerName if playerId not set yet
           heuristicWeights: config.heuristicWeights,
           createdAt: new Date(),
         }
@@ -598,15 +730,35 @@ onMounted(async () => {
         gameStore.initRoomConfig(roomConfig.value)
         initializeRoomSlots()
         showWaitingRoom.value = true
+
+        // 🔥 NEW: Create lobby and connect to WebSocket
+        try {
+          console.log('🏠 Room Master: Creating lobby...')
+          await apiGameStore.createLobby(code.value, playerName)
+          console.log('✅ Lobby created successfully')
+        } catch (error) {
+          console.error('Failed to create lobby:', error)
+          apiError.value = 'Failed to create lobby. Please try again.'
+          router.push('/')
+        }
       }
     } else {
-      alert('Join room feature will be implemented with WebSocket')
-      router.push('/')
+      // 🔥 NEW: Guest joins the lobby
+      try {
+        console.log('🚪 Guest: Joining lobby...')
+        await apiGameStore.joinLobby(code.value)
+        console.log('✅ Joined lobby successfully')
+        showWaitingRoom.value = true
+      } catch (error) {
+        console.error('Failed to join lobby:', error)
+        apiError.value = 'Failed to join lobby. Room may not exist.'
+        router.push('/')
+      }
     }
   } else {
     // ✅ DEMO MODE: Load room config and show waiting room
     console.log('Demo Mode: Initializing waiting room...')
-    
+
     // Load room config if room master
     if (isRoomMaster.value) {
       const savedConfig = localStorage.getItem('roomConfig')
@@ -620,7 +772,7 @@ onMounted(async () => {
           humanPlayers: config.humanPlayers,
           bots: config.bots,
           waitingSlots: 4 - config.humanPlayers - config.bots,
-          roomMaster: playerId,
+          roomMaster: playerId || playerName, // Use playerName if playerId not set yet
           heuristicWeights: config.heuristicWeights,
           createdAt: new Date(),
         }
@@ -757,7 +909,7 @@ const handleStartGame = async () => {
   if (gameModeStore.isApiMode()) {
     // ✅ API MODE: Initialize game with backend API
     console.log('API Mode: Calling /api/play...')
-    
+
     if (!roomConfig.value) {
       alert('Room config not found!')
       return
@@ -771,31 +923,35 @@ const handleStartGame = async () => {
     }
 
     try {
-      showWaitingRoom.value = false
-      
-      // Show loading state
-      const playerName = localStorage.getItem('playerName') || 'Player'
-      
-      // Call API to initialize game
+      // Collect all player names from lobby
+      const playerNames = apiGameStore.lobbyPlayers
+
+      console.log('🎮 Starting game with player names:', playerNames)
+      console.log("📋 Expected format: player_name: ['rama', 'ateng']")
+
+      // Call API to initialize game with ALL player names from lobby
       await apiGameStore.initializeGame({
-        playerName,
+        playerNames, // Send array: ['rama', 'ateng']
         roomId: code.value,
         numberOfBots: roomConfig.value.bots,
         numberOfPlayers: roomConfig.value.humanPlayers,
-        heuristicWeights: roomConfig.value.heuristicWeights
+        heuristicWeights: roomConfig.value.heuristicWeights,
       })
+
+      // ✅ Close waiting room AFTER API call succeeds
+      showWaitingRoom.value = false
 
       // Save player ID from backend response
       localStorage.setItem('playerId', apiGameStore.myPlayerId)
-      
+
       console.log('API game initialized successfully')
-      
+
       // Get first player from turn order
       const firstPlayer = apiGameStore.currentPlayer
       if (firstPlayer) {
         firstPlayerName.value = firstPlayer.name
         showFirstPlayerNotification.value = true
-        
+
         // Auto-trigger bot if it's bot's turn
         if (firstPlayer.isBot) {
           setTimeout(() => {
@@ -806,15 +962,18 @@ const handleStartGame = async () => {
       }
     } catch (error) {
       console.error('Failed to start API game:', error)
-      apiError.value = error instanceof Error ? error.message : 'Failed to start game. Please check your connection and try again.'
+      apiError.value =
+        error instanceof Error
+          ? error.message
+          : 'Failed to start game. Please check your connection and try again.'
       showWaitingRoom.value = true // Show waiting room again on error
     }
   } else {
     // ✅ DEMO MODE: Initialize game with players
     console.log('Demo Mode: Initializing local game...')
-    
+
     showWaitingRoom.value = false
-    
+
     // Collect all players from slots (excluding waiting)
     const activePlayers = gameStore.roomSlots
       .filter((slot) => slot.type === 'player' || slot.type === 'bot')
@@ -830,14 +989,10 @@ const handleStartGame = async () => {
   }
 }
 
-const handleLeaveWaitingRoom = () => {
-  router.push('/')
-}
-
 const handleCloseWinDialog = () => {
   showWinDialog.value = false
   showApiWinDialog.value = false
-  
+
   console.log('Win dialog closed - board still visible for review')
 }
 
@@ -946,11 +1101,11 @@ const handleCellClick = (position: Position) => {
     apiError.value = 'Game is over! Click "Play Again" to start a new game.'
     return
   }
-  
+
   if (!gameModeStore.isApiMode() && gameStore.status === 'finished') {
     return
   }
-  
+
   if (!isPlayerTurn.value || isDragging.value) return
 
   // Mode 1: If we have a selected card, place it on the clicked cell
@@ -958,7 +1113,7 @@ const handleCellClick = (position: Position) => {
     if (gameModeStore.isApiMode()) {
       // ✅ API MODE: Send move to backend
       apiGameStore.makeMove(position.x, position.y, selectedCard.value.value)
-      
+
       // Clear selection
       selectedCard.value = null
       selectedCell.value = null
@@ -1010,11 +1165,11 @@ const handleCardClick = (card: Card) => {
     apiError.value = 'Game is over! Click "Play Again" to start a new game.'
     return
   }
-  
+
   if (!gameModeStore.isApiMode() && gameStore.status === 'finished') {
     return
   }
-  
+
   if (!isPlayerTurn.value) return
 
   // Mode 1: If cell was selected first and this card is highlighted, deploy it
@@ -1065,11 +1220,11 @@ const handleCardDragStart = (card: Card) => {
     apiError.value = 'Game is over! Click "Play Again" to start a new game.'
     return
   }
-  
+
   if (!gameModeStore.isApiMode() && gameStore.status === 'finished') {
     return
   }
-  
+
   isDragging.value = true
   console.log('Drag start:', card)
 }
@@ -1084,13 +1239,13 @@ const handleCardDrop = (card: Card, position: Position) => {
   // API MODE: Send move via WebSocket
   if (gameModeStore.isApiMode()) {
     console.log('🎮 API Mode: Sending human move...')
-    
+
     // Check if game is finished
     if (apiGameStore.gameStatus === 'finished') {
       apiError.value = 'Game is over! Click "Play Again" to start a new game.'
       return
     }
-    
+
     // Validate it's player's turn
     if (!apiGameStore.isMyTurn) {
       apiError.value = "It's not your turn!"
@@ -1106,7 +1261,8 @@ const handleCardDrop = (card: Card, position: Position) => {
 
     // vState: 0 = not possible, 1 = valid placement, 2 = occupied
     if (targetCell.vState === 0) {
-      apiError.value = 'Invalid move! You can only place cards adjacent to existing cards, or at center for first move.'
+      apiError.value =
+        'Invalid move! You can only place cards adjacent to existing cards, or at center for first move.'
       return
     }
 
@@ -1150,7 +1306,8 @@ const handleCardDrop = (card: Card, position: Position) => {
 
   // Check if move is valid
   if (!gameStore.isValidMove(position, card)) {
-    apiError.value = 'Invalid move! You can only place cards adjacent to existing cards, or at center for first move.'
+    apiError.value =
+      'Invalid move! You can only place cards adjacent to existing cards, or at center for first move.'
     return
   }
 
@@ -1279,11 +1436,11 @@ function resetBoard() {
 function leaveRoom() {
   // Clear both stores
   gameStore.resetGame()
-  
+
   if (gameModeStore.isApiMode()) {
     apiGameStore.reset()
   }
-  
+
   router.push('/')
 }
 </script>

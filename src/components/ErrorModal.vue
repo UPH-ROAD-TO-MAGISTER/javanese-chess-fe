@@ -7,7 +7,9 @@
         @click.self="emit('close')"
       >
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-        <div class="relative glass-strong rounded-2xl p-8 max-w-md w-full shadow-2xl animate-bounce-in">
+        <div
+          class="relative glass-strong rounded-2xl p-8 max-w-md w-full shadow-2xl animate-bounce-in"
+        >
           <div class="text-center">
             <div class="text-6xl mb-4">{{ isError ? '❌' : '⚠️' }}</div>
             <h2 class="text-2xl font-black text-white mb-3">

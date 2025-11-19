@@ -18,12 +18,15 @@ class WebSocketService {
 
   /**
    * Connect to WebSocket server
+   * @param roomCode - Optional room code. If not provided, connects to lobby WebSocket
    */
-  connect(roomCode: string): Promise<void> {
+  connect(roomCode?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.roomCode = roomCode
-        const wsUrl = `${WS_BASE_URL}/ws?room_code=${roomCode}`
+        this.roomCode = roomCode || null
+        // For lobby phase, connect without room_code parameter
+        // For in-game phase, connect with room_code parameter
+        const wsUrl = roomCode ? `${WS_BASE_URL}/ws?room_code=${roomCode}` : `${WS_BASE_URL}/ws`
         console.log('🔌 Connecting to WebSocket:', wsUrl)
         this.ws = new WebSocket(wsUrl)
 
@@ -91,6 +94,20 @@ class WebSocketService {
   }
 
   /**
+   * Send room created notification
+   */
+  sendRoomCreated(roomCode: string, playerName: string) {
+    console.log('🏠 Sending room_created for room:', roomCode)
+    this.send({
+      action: 'room_created',
+      data: {
+        room_code: roomCode,
+        player_name: playerName,
+      },
+    })
+  }
+
+  /**
    * Send human move
    */
   sendHumanMove(playerId: string, x: number, y: number, card: number) {
@@ -100,8 +117,8 @@ class WebSocketService {
         player_id: playerId,
         x,
         y,
-        card
-      }
+        card,
+      },
     })
   }
 
@@ -113,8 +130,8 @@ class WebSocketService {
     this.send({
       action: 'bot_move',
       data: {
-        room_code: roomCode
-      }
+        room_code: roomCode,
+      },
     })
   }
 
@@ -143,13 +160,19 @@ class WebSocketService {
    */
   private handleMessage(data: Record<string, unknown>) {
     console.log('📨 WebSocket message received:', data)
-    
+
     // Determine event type from message structure
     let eventType = 'message'
 
     if (data.action && typeof data.action === 'string') {
       eventType = data.action
       console.log('🎯 Event type detected:', eventType)
+      
+      // 🔥 Special highlight for game_started event
+      if (eventType === 'game_started') {
+        console.log('🎮🎮🎮 GAME_STARTED EVENT DETECTED! 🎮🎮🎮')
+        console.log('📦 Full event data:', JSON.stringify(data, null, 2))
+      }
     } else if (
       data.data &&
       typeof data.data === 'object' &&
@@ -166,7 +189,13 @@ class WebSocketService {
       eventType = 'game-end'
     }
 
-    console.log('🔔 Emitting event:', eventType, 'to', this.listeners.get(eventType)?.size || 0, 'listeners')
+    console.log(
+      '🔔 Emitting event:',
+      eventType,
+      'to',
+      this.listeners.get(eventType)?.size || 0,
+      'listeners',
+    )
 
     // Emit to all listeners for this event
     const eventListeners = this.listeners.get(eventType)
@@ -211,7 +240,7 @@ class WebSocketService {
     if (this.reconnectAttempts < this.maxReconnectAttempts && this.roomCode) {
       this.reconnectAttempts++
       console.log(
-        `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+        `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`,
       )
 
       setTimeout(() => {

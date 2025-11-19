@@ -113,17 +113,17 @@ export interface GameState {
 export interface HeuristicWeights {
   // Basic move
   legalMove: number // Legal move available (30)
-  
+
   // Winning
   win: number // Prioritize winning move - 4 aligned cards (10000)
-  
+
   // Threat detection - 3 opponent cards aligned
   detectThreat3: number // Detect threat: 3 opponent cards aligned (200)
   overwriteThreat: number // Overwrite opponent card during threat (200)
   blockThreatMiddle: number // Block middle of threat formation (75)
   blockThreatEdge: number // Block edge of threat formation (50)
   blockOpponentPath: number // Block opponent's path during threat (100)
-  
+
   // Threat card values (1-9)
   threatCardValue1: number // Replace card value 1 during threat
   threatCardValue2: number // Replace card value 2 during threat
@@ -134,12 +134,12 @@ export interface HeuristicWeights {
   threatCardValue7: number // Replace card value 7 during threat
   threatCardValue8: number // Replace card value 8 during threat
   threatCardValue9: number // Replace card value 9 during threat
-  
+
   // Potential threat - adjacent but < 3
   detectPotentialThreat: number // Detect potential threat (base value)
   overwritePotentialThreat: number // Overwrite during potential threat (125)
   blockPotentialPath: number // Block opponent's path for potential threat (70)
-  
+
   // Potential threat card values (1-9)
   potentialThreatCardValue1: number // Replace card value 1 during potential threat
   potentialThreatCardValue2: number // Replace card value 2 during potential threat
@@ -150,11 +150,11 @@ export interface HeuristicWeights {
   potentialThreatCardValue7: number // Replace card value 7 during potential threat
   potentialThreatCardValue8: number // Replace card value 8 during potential threat
   potentialThreatCardValue9: number // Replace card value 9 during potential threat
-  
+
   // Own strategy
   create2InRow: number // 2 of own cards aligned (50)
   create3InRow: number // 3 of own cards aligned (100)
-  
+
   // Card strategy
   playSmallestCard: number // Play the smallest card (60)
   placeNearOwnCard: number // Place card near own card (60)
