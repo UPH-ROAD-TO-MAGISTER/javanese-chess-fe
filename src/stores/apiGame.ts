@@ -326,19 +326,27 @@ export const useApiGameStore = defineStore('apiGame', () => {
         turnOrder.value = turnOrderIds.map((id) => playersMap.get(id)!).filter(Boolean)
         console.log('✅ Players initialized:', turnOrder.value.length)
 
-        // Find my player ID if not already set (for guests)
-        if (!myPlayerId.value) {
-          const myName = localStorage.getItem('playerName')
-          console.log('🔍 Looking for player with name:', myName)
+        // ✅ ALWAYS find my player ID by name (even if already set from API)
+        // This is because turn_order might be shuffled, so we need to re-identify
+        const myName = localStorage.getItem('playerName')
+        console.log('🔍 Looking for player with name:', myName)
+        
+        const myPlayer = turnOrder.value.find((p) => p.name === myName && !p.isBot)
+        if (myPlayer) {
+          const previousId = myPlayerId.value
+          myPlayerId.value = myPlayer.id
           
-          const myPlayer = turnOrder.value.find((p) => p.name === myName && !p.isBot)
-          if (myPlayer) {
-            myPlayerId.value = myPlayer.id
-            console.log('✅ My player ID found:', myPlayerId.value)
+          if (previousId && previousId !== myPlayer.id) {
+            console.log('⚠️ Player ID changed from', previousId, 'to', myPlayer.id, '(turn order shuffled)')
           } else {
-            console.error('❌ My player NOT found!')
-            console.log('Available players:', turnOrder.value.map((p) => p.name))
+            console.log('✅ My player ID confirmed:', myPlayerId.value)
           }
+          
+          // Save to localStorage
+          localStorage.setItem('playerId', myPlayerId.value)
+        } else {
+          console.error('❌ My player NOT found!')
+          console.log('Available players:', turnOrder.value.map((p) => p.name))
         }
       }
 
